@@ -1,0 +1,15 @@
+{
+  "planning_branch": "plan",
+  "development_branch": "dev",
+  "release_branch": "main",
+  "protected_paths": [
+    "docs/planning",
+    "docs/architecture",
+    "AGENTS.md",
+    "docs/process",
+    ".harness/policy.json",
+    "scripts/contract_guard.py",
+    ".githooks"
+  ],
+  "baseline_file": ".harness/adopted-plan.json"
+}

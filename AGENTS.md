@@ -1,0 +1,24 @@
+# Dodge Match 작업 규칙
+
+## 워크트리와 소유권
+
+- `plan`: `dodge-match-plan`에서 게임 기획, 규칙, 설계와 작업 계약을 관리한다. 구현은 하지 않는다.
+- `dev`: 연결 워크트리 `../dodge-match-dev`에서 채택한 기획에 따라 구현하고 검증한다.
+- `main`: 출시 기준 브랜치. 직접 커밋하지 않으며 사용자가 명시적으로 요청한 경우에만 검토된 dev를 fast-forward로 승격한다.
+- `docs/planning/`: 게임 규칙, 수치, 범위, 승인 상태, 인수 기준. plan 소유.
+- `docs/architecture/`: 기술 구조와 인터페이스 계약. plan 소유.
+- `docs/process/`, `AGENTS.md`, 하네스 정책·검사기·훅: plan 소유.
+- 소스 코드, 런타임 설정, `docs/progress/`, `docs/verification/`, `.harness/adopted-plan.json`: dev 소유.
+- `docs/feedback/dev/`: dev가 근거와 대안을 남기는 기획 변경 제안. 확정 규칙으로 취급하지 않는다.
+
+## 작업 원칙
+
+- dev는 `.harness/adopted-plan.json`의 정확한 plan 커밋을 기준으로 작업한다. 최신 plan을 자동으로 승인하거나 채택하지 않는다.
+- 보호 문서의 의미를 바꿔야 하면 dev 피드백에 근거를 남기고 plan에서 검토·변경한 뒤 해당 커밋을 dev에 병합·채택한다.
+- 개발 진행률, 검증 결과, 일반 버그 수정은 dev에서 처리한다. 채택 기록과 구현 이력을 plan으로 역병합하지 않는다.
+- 하네스 설치 및 채택은 게임 규칙이나 아직 미정인 제품 결정을 승인하지 않는다.
+- 기존 작업을 보존하며 강제 push, 훅 우회, 보호 정책 무력화를 하지 않는다.
+- plan/dev의 기존 원격으로 일반 push는 사용자 상시 권한을 따른다. main 승격·push는 별도 명시 요청이 필요하다.
+- 원격은 개인 공개 저장소 `milkpotato1000/dodge-match`의 `personal`만 사용한다. 비밀 정보와 비공개 자료는 커밋하지 않는다.
+
+상세 명령과 한계는 [하네스 작업 절차](docs/process/plan-dev.md)를 따른다.
