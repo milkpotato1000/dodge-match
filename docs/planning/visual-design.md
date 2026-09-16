@@ -86,17 +86,18 @@
 
 사용자가 제공한 반려견 사진과 영상 프레임을 바탕으로 첫 캐릭터 기준안을 제작했다. 검은 늘어진 귀, 비대칭 검은 눈가 무늬와 흰 이마선, 흰 주둥이·몸·다리의 작은 점무늬, 높이 말린 풍성한 흰 꼬리, 혀를 내민 밝은 표정을 핵심 식별점으로 유지한다.
 
-![반려견 기반 Dodge 캐릭터 기본 idle](../design/characters/player-dog-idle-v1.png)
+![반려견 기반 Dodge 캐릭터 기본 idle v2](../design/characters/player-dog-idle-v2.png)
 
-- 기본 게임 스프라이트: [player-dog-idle-v1.png](../design/characters/player-dog-idle-v1.png)
-- 동작 기준 시트: [player-dog-state-sheet-v1.png](../design/characters/player-dog-state-sheet-v1.png)
-- 금지색 오입력 반응: [player-dog-forbidden-cry-v1.png](../design/characters/player-dog-forbidden-cry-v1.png)
-- 시트의 다섯 동작은 `idle`, 오른쪽 이동, 왼쪽 이동, `near-hit`, `match-success` 기준이다. `hit`은 게임 오버 연출과 함께 후속 제작한다.
-- v1 방향은 실제 특징을 유지하면서 머리와 꼬리를 조금 키운 둥근 아케이드 마스코트다. 짙은 외곽선, 옅은 보라 그림자, 가는 청록 림라이트를 사용한다.
+- 기본 게임 스프라이트: [player-dog-idle-v2.png](../design/characters/player-dog-idle-v2.png)
+- 이전 동작 참고 시트: [player-dog-state-sheet-v1.png](../design/characters/player-dog-state-sheet-v1.png)
+- 이전 금지색 오입력 반응: [player-dog-forbidden-cry-v1.png](../design/characters/player-dog-forbidden-cry-v1.png)
+- v2 방향은 실제 특징을 유지하면서 머리와 꼬리를 조금 키운 둥근 아케이드 마스코트다. 짙은 외곽선, 옅은 보라 그림자, 가는 청록 림라이트를 사용한다.
+- **발톱은 표시하지 않는다.** 발은 흰 털로 덮인 부드러운 둥근 형태로 그리고, 발가락을 나눌 필요가 있을 때만 아주 옅은 아이보리 또는 연보라 음영을 쓴다. 검정·짙은 회색의 발톱이나 발가락 선은 금지한다.
+- v1 상태 시트와 울음 자산은 자세·표정 참고용이다. 두 파일의 어두운 발톱 표현은 폐기했으며 dev 런타임 자산으로 사용하지 않는다.
 
 - 원본 사진·영상은 공개 저장소에 커밋하지 않는다. 캐릭터 제작 입력으로만 사용하고, 사용자가 승인한 파생 게임 자산만 `docs/design` 또는 dev 자산 경로에 넣는다.
 - 영상은 얼굴·전신·대표 움직임이 선명한 프레임을 추출해 사진과 함께 참고한다. 추출 프레임도 공개 저장소에는 넣지 않는다.
-- v1은 첫 구현 기준 자산으로 채택하고, 실제 플레이 축소 QA에서 식별성이 부족할 때 외곽선·점무늬 밀도·머리 비율만 조정한다.
+- v2는 첫 구현 기준 자산으로 채택하고, 실제 플레이 축소 QA에서 식별성이 부족할 때 외곽선·점무늬 밀도·머리 비율만 조정한다.
 - 필요한 상태는 `idle`, `move`, `near-hit`, `hit`, `match-success`다. 각 상태는 좌우 어느 배치에서도 사용할 수 있게 방향 의존 장식을 피한다.
 - 마스터 자산은 충분히 큰 투명 PNG로 보관하고 실제 게임에서는 약 30~34dp로 표시한다. 축소했을 때 귀·얼굴 윤곽과 핵심 무늬가 남아야 한다.
 - 충돌 판정은 그림의 털이나 귀 끝과 분리한다. 표시 반지름 3U 안에 캐릭터를 배치하고 실제 원형 충돌 반지름은 2.25U로 고정한다.
@@ -108,6 +109,8 @@
 ### 금지색 오입력 `ㅠoㅠ` 반응
 
 ![금지색을 눌렀을 때 우는 반려견 캐릭터](../design/characters/player-dog-forbidden-cry-v1.png)
+
+이 이미지는 울음 자세·표정 참고용 v1이다. 실제 구현용 재생성에서는 v2의 발 규칙을 적용해 어두운 발톱을 제거한다.
 
 #### Match와 Dodge의 동시 피드백
 
@@ -293,7 +296,7 @@ Dodge 충돌 또는 Match 생명 0에서 즉시 플레이를 멈추고 원인별
 ## 13. 첫 구현 디자인 결정
 
 - 전체 분위기는 어두운 **Neon Orbit Arcade**로 진행한다.
-- 플레이어 캐릭터는 `player-dog-idle-v1.png`와 `player-dog-state-sheet-v1.png`를 첫 구현 기준으로 사용한다. Pip은 자산 로드 실패 시에만 쓰는 개발 폴백이다.
+- 플레이어 캐릭터는 `player-dog-idle-v2.png`를 첫 구현 기준으로 사용한다. 나머지 상태는 v2 외형과 발톱 비표시 규칙으로 개별 투명 PNG를 제작하며, Pip은 자산 로드 실패 시에만 쓰는 개발 폴백이다.
 - 판정은 영문 `PERFECT/GREAT/GOOD/MISS`, 안내와 설정은 한글을 기본으로 한다.
 - 모바일·PC 모두 가로 16:9와 좌우 50:50 구조를 사용한다.
 - 인게임 시간은 `02:23.456` 형식으로 표시한다.
