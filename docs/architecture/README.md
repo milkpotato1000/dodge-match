@@ -80,7 +80,7 @@ Phaser는 캔버스/WebGL 렌더링, 포인터 기반 마우스·터치 입력, 
 | `bpm` / `timeSignature` | 첫 차트는 120 / 4·4 |
 | `audioOffsetMs` | 음원의 첫 박과 게임 시각 차이 |
 | `targets[]` | 원 등장 시각, 정답 시각, 수축 시간 |
-| `colorTransitions[]` | 0/30/60/90초 구역 단계와 4색 이후 기본 5300ms 재추첨 주기 |
+| `colorTransitions[]` | 0/15/30/45초 구역 단계, 50.300초 최초 동기 전환과 이후 기본 5300ms 재추첨 주기 |
 | `dodgeCurve[]` | 시각별 목표 야구공 개수와 속도 |
 | `maxScore` | 모든 판정을 Perfect로 완료한 계산값 |
 
