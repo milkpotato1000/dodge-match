@@ -90,6 +90,7 @@
 
 - 기본 게임 스프라이트: [player-dog-idle-v1.png](../design/characters/player-dog-idle-v1.png)
 - 동작 기준 시트: [player-dog-state-sheet-v1.png](../design/characters/player-dog-state-sheet-v1.png)
+- 금지색 오입력 반응: [player-dog-forbidden-cry-v1.png](../design/characters/player-dog-forbidden-cry-v1.png)
 - 시트의 다섯 동작은 `idle`, 오른쪽 이동, 왼쪽 이동, `near-hit`, `match-success` 기준이다. `hit`은 게임 오버 연출과 함께 후속 제작한다.
 - v1 방향은 실제 특징을 유지하면서 머리와 꼬리를 조금 키운 둥근 아케이드 마스코트다. 짙은 외곽선, 옅은 보라 그림자, 가는 청록 림라이트를 사용한다.
 
@@ -103,6 +104,17 @@
 - 현재 구역색은 캐릭터 아래의 반투명 원형 조명과 고유 기호 배지로 표시한다. 이 효과는 캐릭터 고유 털색을 덮지 않는다.
 - 이동 중에는 몸체가 진행 방향으로 최대 8° 기울고 80ms 길이의 짧은 잔상이 생긴다. 정지 중에는 1.2초 주기의 2% 호흡 모션만 사용한다.
 - 위험 근접 시 외곽선이 한 번 수축하고, 충돌 시 표정과 실루엣이 함께 바뀐다. 강한 섬광으로 캐릭터 특징을 가리지 않는다.
+
+### 금지색 오입력 `ㅠoㅠ` 반응
+
+![금지색을 눌렀을 때 우는 반려견 캐릭터](../design/characters/player-dog-forbidden-cry-v1.png)
+
+- 금지 상태로 잠긴 원을 터치해 `Miss(FORBIDDEN)`이 발생할 때만 사용한다. 일반적인 빠름·늦음·놓침 Miss에는 사용하지 않는다.
+- 검은 귀가 조금 처지고 몸을 낮춘 채 앞발을 모으며, 눈은 `ㅠ ㅠ`처럼 아래로 감기고 입은 작은 `o` 모양이 된다. 문자 `ㅠoㅠ`를 직접 표시하지 않는다.
+- 양쪽 눈물은 축소 화면에서도 읽히도록 크게 표현하되 옅은 청백색으로 제한한다. 현재 금지색이나 7색 신호와 연결되는 색 효과는 추가하지 않는다.
+- 전체 반응은 480ms다: 0~80ms 몸을 8% 낮추기, 80~360ms 울음 포즈 유지, 360~480ms 현재 이동 상태로 복귀한다.
+- 반응 중에도 Dodge 이동, 점 충돌, Match 차트와 게임 시계는 계속된다. 표시 자산만 바뀌며 3U 표시 범위와 2.25U 충돌 반지름은 변하지 않는다.
+- 같은 판정으로 Match 생명이 0이 되면 울음 포즈를 최소 120ms 보여준 뒤 `SYNC LOST` 게임 오버 연출로 연결한다.
 
 ## 5. 회피 점 디자인
 
@@ -244,7 +256,7 @@ Dodge 충돌 또는 Match 생명 0에서 즉시 플레이를 멈추고 원인별
 
 ### 컴포넌트와 상태
 
-- 반려견 캐릭터: idle, move, near-hit, hit, match-success 반응
+- 반려견 캐릭터: idle, move, near-hit, hit, match-success, forbidden-cry 반응
 - 회피 점: spawn-warning, moving, bounce, collision
 - 타이밍 원: appearing, approaching, locked-allowed, locked-forbidden, judged 4종
 - 판정 텍스트: 4등급과 Miss 원인 4종, Early/Late
@@ -254,7 +266,7 @@ Dodge 충돌 또는 Match 생명 0에서 즉시 플레이를 멈추고 원인별
 
 ### 오디오·촉각과 연결할 이벤트
 
-디자인 단계에서 이벤트 이름만 고정하고 실제 사운드는 별도 제작한다: `target_spawn`, `ring_contact`, `perfect`, `great`, `good`, `miss`, `life_gain`, `life_loss`, `zone_shift`, `dodge_bounce`, `dodge_hit`, `run_clear`. 모든 이벤트는 시각 표현을 먼저 갖는다.
+디자인 단계에서 이벤트 이름만 고정하고 실제 사운드는 별도 제작한다: `target_spawn`, `ring_contact`, `perfect`, `great`, `good`, `miss`, `forbidden_tap`, `life_gain`, `life_loss`, `zone_shift`, `dodge_bounce`, `dodge_hit`, `run_clear`. 모든 이벤트는 시각 표현을 먼저 갖는다.
 
 ## 12. 접근성·사용성 확인 항목
 
