@@ -4,3 +4,7 @@ test-results/
 playwright-report/
 __pycache__/
 .DS_Store
+*.py[cod]
+.env
+.env.*
+!.env.example
