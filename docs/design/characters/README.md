@@ -10,8 +10,9 @@
 | `player-dog-idle-v1.png` | 1254×1254 RGBA | 이전 외형 기록; dev에서 사용하지 않음 |
 | `player-dog-state-sheet-v1.png` | 1536×1024 RGBA | 동작·자세 참고용; 발 표현은 v2 규칙으로 재제작 |
 | `player-dog-forbidden-cry-v1.png` | 1254×1254 RGBA | 울음 표정·자세 참고용; 발 표현은 v2 규칙으로 재제작 |
+| `player-dog-loading-run-v1.png` | 2172×724 RGBA | 로딩 바 선두에서 재생하는 6프레임 달리기·도약 루프 |
 
-현재 기준인 `player-dog-idle-v2.png`는 실제 알파 채널을 포함한다. 상태 시트는 자세 참고에만 쓰며, 구현용 `move`, `near-hit`, `hit`, `match-success`, `forbidden-cry`는 v2를 기준으로 개별 투명 PNG로 제작한 뒤 같은 바닥 중심 피벗, 투명 캔버스와 표시 반지름에 맞춘다. 왼쪽 이동은 오른쪽 이동 자산을 수평 반전한다.
+현재 기준인 `player-dog-idle-v2.png`와 `player-dog-loading-run-v1.png`는 실제 알파 채널을 포함한다. 로딩 루프는 사용자가 고른 상태 시트의 상단 가운데 뻗은 달리기와 하단 가운데 즐거운 공중 자세를 핵심 프레임으로 삼아 v2 외형과 발 규칙으로 재제작했다. 상태 시트는 자세 참고에만 쓰며, 구현용 `move`, `near-hit`, `hit`, `match-success`, `forbidden-cry`는 v2를 기준으로 개별 투명 PNG로 제작한 뒤 같은 바닥 중심 피벗, 투명 캔버스와 표시 반지름에 맞춘다. 왼쪽 이동은 오른쪽 이동 자산을 수평 반전한다.
 
 ## 외형 기준
 
