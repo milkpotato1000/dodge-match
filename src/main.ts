@@ -57,17 +57,23 @@ function shell(content: string) {
   overlay.hidden = false;
 }
 function keyboardForm() {
-  return `<label class="keyboard-setting" for="keyboard-layout">PC 이동 키<select id="keyboard-layout"><option value="wasd" ${prefs.keyboardLayout === "wasd" ? "selected" : ""}>WASD</option><option value="arrows" ${prefs.keyboardLayout === "arrows" ? "selected" : ""}>방향키 ↑ ↓ ← →</option></select></label>`;
+  return `<fieldset class="keyboard-setting"><legend>PC 이동 키</legend><div class="segmented" role="group" aria-label="PC 이동 키"><button type="button" data-keyboard="wasd" aria-pressed="${prefs.keyboardLayout === "wasd"}" class="${prefs.keyboardLayout === "wasd" ? "selected" : ""}">WASD</button><button type="button" data-keyboard="arrows" aria-pressed="${prefs.keyboardLayout === "arrows"}" class="${prefs.keyboardLayout === "arrows" ? "selected" : ""}">방향키 ↑ ↓ ← →</button></div><small>선택한 키만 이동에 사용됩니다 · 자동 저장</small></fieldset>`;
 }
 function bindKeyboard() {
-  document.querySelector<HTMLSelectElement>("#keyboard-layout")!.onchange = (
-    event,
-  ) => {
-    clearInput();
-    prefs.keyboardLayout = (event.target as HTMLSelectElement)
-      .value as KeyboardLayout;
-    saveSettings(prefs);
-  };
+  const buttons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-keyboard]"),
+  );
+  for (const button of buttons)
+    button.onclick = () => {
+      clearInput();
+      prefs.keyboardLayout = button.dataset.keyboard as KeyboardLayout;
+      saveSettings(prefs);
+      for (const item of buttons) {
+        const active = item.dataset.keyboard === prefs.keyboardLayout;
+        item.setAttribute("aria-pressed", String(active));
+        item.classList.toggle("selected", active);
+      }
+    };
 }
 function isEditing(target: EventTarget | null) {
   return (

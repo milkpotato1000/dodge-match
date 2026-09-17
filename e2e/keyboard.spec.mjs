@@ -5,11 +5,15 @@ test("AC-30: persisted exclusive keys, physical codes, focus and pause resets", 
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
-  const select = page.getByLabel("PC 이동 키");
-  await expect(select).toHaveValue("wasd");
-  await select.selectOption("arrows");
+  const selected = (layout) =>
+    page.getByRole("button", {
+      name: layout === "wasd" ? "WASD" : "방향키 ↑ ↓ ← →",
+      exact: true,
+    });
+  await expect(selected("wasd")).toHaveAttribute("aria-pressed", "true");
+  await selected("arrows").click();
   await page.reload();
-  await expect(select).toHaveValue("arrows");
+  await expect(selected("arrows")).toHaveAttribute("aria-pressed", "true");
   await page.screenshot({
     path: "docs/verification/keyboard-layout/setup.png",
   });
@@ -42,7 +46,7 @@ test("AC-30: persisted exclusive keys, physical codes, focus and pause resets", 
     x: 0,
     y: 0,
   });
-  await select.selectOption("wasd");
+  await selected("wasd").click();
   expect(await page.evaluate(() => window.__dodge.engine.move)).toEqual({
     x: 0,
     y: 0,
@@ -96,7 +100,7 @@ test("AC-30: persisted exclusive keys, physical codes, focus and pause resets", 
     x: 0,
     y: 0,
   });
-  await expect(select).toHaveValue("wasd");
+  await expect(selected("wasd")).toHaveAttribute("aria-pressed", "true");
   await page.keyboard.up("a");
   expect(errors).toEqual([]);
 });

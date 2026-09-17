@@ -600,32 +600,52 @@ html[data-reduced="true"] #runner {
 }
 
 .keyboard-setting {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  border: 0;
+  padding: 0;
   margin: 12px 0;
+  min-width: 0;
   color: #8fa1b9;
   font-size: 12px;
 }
-.keyboard-setting select {
-  background: #10192a;
-  border: 1px solid #2a3850;
-  border-radius: 6px;
-  color: #eaf0fc;
-  padding: 8px 12px;
-  min-width: 140px;
-  font: inherit;
+.keyboard-setting legend {
+  padding: 0;
+  margin-bottom: 8px;
 }
-.keyboard-setting select:focus-visible {
-  outline: 3px solid #8aeada;
-  outline-offset: 3px;
+.keyboard-setting .segmented {
+  width: 100%;
+}
+.keyboard-setting small {
+  display: block;
+  margin-top: 6px;
+  color: #8fa1b9;
+  font-size: 10px;
 }
 @media (max-height: 600px) {
   .keyboard-setting {
     margin: 6px 0;
   }
-  .keyboard-setting select {
-    padding: 5px 9px;
+  .keyboard-setting legend {
+    margin-bottom: 4px;
+  }
+  .keyboard-setting small {
+    font-size: 9px;
+    margin-top: 4px;
+  }
+  .dog-preview {
+    height: 48px;
+  }
+}
+.launch {
+  overflow-y: auto;
+}
+.launch form {
+  flex: 0 0 auto;
+}
+.launch > small {
+  flex: 0 0 auto;
+}
+@media (max-height: 600px) {
+  .launch {
+    justify-content: flex-start;
   }
 }
