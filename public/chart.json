@@ -1,7 +1,7 @@
 {
   "chartId": "first-orbit",
-  "chartVersion": "2",
-  "rulesetVersion": "2",
+  "chartVersion": "3",
+  "rulesetVersion": "3",
   "durationMs": 240000,
   "bpm": 120,
   "timeSignature": "4/4",
@@ -1490,13 +1490,7 @@
       "approach": 1000
     }
   ],
-  "colorTransitions": [
-    0,
-    15000,
-    30000,
-    45000,
-    50300
-  ],
+  "colorTransitions": [],
   "dodgeCurve": [
     [
       0,
@@ -1539,5 +1533,5 @@
       84.5
     ]
   ],
-  "maxScore": 66775
+  "maxScore": 109550
 }

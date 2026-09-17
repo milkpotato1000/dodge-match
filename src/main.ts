@@ -1,3 +1,4 @@
+import { dogMotion, happyFrame, COLLISION_MS } from "./dog-motion";
 import {
   isMovementCode,
   keyboardVector,
@@ -35,9 +36,21 @@ const clock = (ms: number) =>
   )
     .toString()
     .padStart(3, "0")}`;
-let chart: Chart, scene: PlayScene, game: Game, dogImage: HTMLImageElement;
-let state: "setup" | "playing" | "paused" | "countdown" | "result" | "board" =
-    "setup",
+let chart: Chart,
+  scene: PlayScene,
+  game: Game,
+  dogImage: HTMLImageElement,
+  loadingImage: HTMLImageElement,
+  cryImage: HTMLImageElement;
+let collisionStarted = -Infinity;
+let state:
+    | "setup"
+    | "playing"
+    | "paused"
+    | "countdown"
+    | "result"
+    | "board"
+    | "ending" = "setup",
   resumeAt = 0,
   accumulator = 0,
   lastGradeCount = 0;
@@ -98,7 +111,7 @@ function setup() {
   pauseButton.hidden = true;
   clearInput();
   shell(
-    `<section class="menu"><div class="intro"><div class="eyebrow"><i></i> NEON ORBIT ARCADE <span>01 / FIRST ORBIT</span></div><h1>DODGE<span> / </span><br>MATCH<span class="period">.</span></h1><p class="tagline">두 가지 본능. 하나의 리듬.</p><p class="description">야구공을 피하며, 링이 닿는 순간 색을 맞추세요.<br>지금 밟고 있는 색은 누르지 마세요.</p><div class="instructions"><div><b>01</b><strong>MOVE</strong><span>선택한 PC 이동 키 · D-pad</span></div><div><b>02</b><strong>MATCH</strong><span>링이 닿으면 탭 / 같은 색은 패스</span></div><div><b>03</b><strong>SURVIVE</strong><span>${chart.durationMs / 1000}초 · 한 번의 충돌로 종료</span></div></div><div class="menu-foot">${chart.durationMs / 1000} SEC <span>×</span> ${chart.targets.length} TARGETS <span>×</span> 7 COLORS</div></div><div class="launch"><div class="dog-preview"><div class="orbit"></div><img src="/assets/dog.png" alt="흰 털과 검은 귀의 플레이어 강아지"><span>READY TO PLAY?</span></div><form id="setup-form"><label class="field">PLAYER NAME<input id="name" maxlength="16" value="${esc(prefs.name)}" required autocomplete="nickname"></label><div class="layout-label">PLAYFIELD ORDER</div><div class="segmented"><button type="button" id="normal" class="${prefs.swapped ? "" : "selected"}">DODGE / MATCH</button><button type="button" id="swapped" class="${prefs.swapped ? "selected" : ""}">MATCH / DODGE</button></div>${keyboardForm()}<details><summary>사운드 · 접근성 설정 <span>＋</span></summary>${musicForm()}<label class="toggle"><input id="reduced" type="checkbox" ${prefs.reduced ? "checked" : ""}> Reduced Effects</label><label class="toggle"><input id="vibration" type="checkbox" ${prefs.vibration ? "checked" : ""}> 진동</label><label class="range">오디오 보정 (ms)<input id="offset" type="number" min="-300" max="300" value="${prefs.offset}"></label><div class="legend">${GLYPHS.map((g, i) => `<span style="color:#${COLORS[i].toString(16)}">${g} ${NAMES[i]}</span>`).join("")}</div></details><button class="primary" type="submit">플레이 시작 <span>↗</span></button><button type="button" class="text-button" id="board">로컬 기록 보기 <span>→</span></button></form><small>최고 기록 ${rankedForChart(chart)[0]?.total.toLocaleString() ?? "—"} <span> / </span> 이 기기에 저장</small></div></section>`,
+    `<section class="menu"><div class="intro"><div class="eyebrow"><i></i> NEON ORBIT ARCADE <span>01 / FIRST ORBIT</span></div><h1>DODGE<span> / </span><br>MATCH<span class="period">.</span></h1><p class="tagline">두 가지 본능. 하나의 리듬.</p><p class="description">야구공을 피하며, 링이 닿는 순간 색을 맞추세요.<br>같은 색 발판으로 이동해 누르면 점수 2배!</p><div class="instructions"><div><b>01</b><strong>MOVE</strong><span>선택한 PC 이동 키 · D-pad</span></div><div><b>02</b><strong>MATCH</strong><span>링이 닿으면 탭 / 같은 색 발판은 ×2</span></div><div><b>03</b><strong>SURVIVE</strong><span>${chart.durationMs / 1000}초 · 한 번의 충돌로 종료</span></div></div><div class="menu-foot">${chart.durationMs / 1000} SEC <span>×</span> ${chart.targets.length} TARGETS <span>×</span> 7 COLORS</div></div><div class="launch"><div class="dog-preview"><div class="orbit"></div><img src="/assets/dog.png" alt="흰 털과 검은 귀의 플레이어 강아지"><span>READY TO PLAY?</span></div><form id="setup-form"><label class="field">PLAYER NAME<input id="name" maxlength="16" value="${esc(prefs.name)}" required autocomplete="nickname"></label><div class="layout-label">PLAYFIELD ORDER</div><div class="segmented"><button type="button" id="normal" class="${prefs.swapped ? "" : "selected"}">DODGE / MATCH</button><button type="button" id="swapped" class="${prefs.swapped ? "selected" : ""}">MATCH / DODGE</button></div>${keyboardForm()}<details><summary>사운드 · 접근성 설정 <span>＋</span></summary>${musicForm()}<label class="toggle"><input id="reduced" type="checkbox" ${prefs.reduced ? "checked" : ""}> Reduced Effects</label><label class="toggle"><input id="vibration" type="checkbox" ${prefs.vibration ? "checked" : ""}> 진동</label><label class="range">오디오 보정 (ms)<input id="offset" type="number" min="-300" max="300" value="${prefs.offset}"></label><div class="legend">${GLYPHS.map((g, i) => `<span style="color:#${COLORS[i].toString(16)}">${g} ${NAMES[i]}</span>`).join("")}</div></details><button class="primary" type="submit">플레이 시작 <span>↗</span></button><button type="button" class="text-button" id="board">로컬 기록 보기 <span>→</span></button></form><small>최고 기록 ${rankedForChart(chart)[0]?.total.toLocaleString() ?? "—"} <span> / </span> 이 기기에 저장</small></div></section>`,
   );
   bindMusic();
   bindKeyboard();
@@ -156,7 +169,7 @@ function countdown() {
   resumeAt = performance.now() + 3000;
   pauseButton.hidden = false;
   shell(
-    '<div class="countdown"><div class="eyebrow">FIND YOUR RHYTHM</div><strong id="count">3</strong><p>이동하며 피하고 · 같은 색은 패스</p></div>',
+    '<div class="countdown"><div class="eyebrow">FIND YOUR RHYTHM</div><strong id="count">3</strong><p>같은 색 발판으로 이동 · 클릭하면 ×2</p></div>',
   );
 }
 function pause() {
@@ -183,7 +196,7 @@ function result() {
   const s = engine.score;
   const clear = engine.end === "chart_complete";
   shell(
-    `<section class="modal result"><div class="eyebrow">${clear ? "${chart.durationMs/1000} SECONDS. YOU MADE IT." : "ONE MORE ORBIT?"}</div><h2>${clear ? "TRACK CLEAR" : "GAME OVER"}<span>.</span></h2><p>${clear ? "두 가지 리듬을 끝까지 지켰어요." : engine.end === "dodge_collision" ? "야구공과 충돌했어요. 다음에는 조금 더 멀리." : "Match 생명이 소진됐어요. 금지색과 링을 확인하세요."}</p><div class="final-score">${s.total(engine.time).toLocaleString()}<small> / ${chart.maxScore.toLocaleString()}</small></div><div class="score-split"><span>DODGE <b>${(Math.floor(engine.time / 1000) * 100).toLocaleString()}</b></span><span>MATCH <b>${s.match.toLocaleString()}</b></span><span>TIME <b>${clock(engine.time)}</b></span></div><div class="grade-grid">${Object.entries(
+    `<section class="modal result"><div class="eyebrow">${clear ? `${chart.durationMs / 1000} SECONDS. YOU MADE IT.` : "ONE MORE ORBIT?"}</div><h2>${clear ? "TRACK CLEAR" : "GAME OVER"}<span>.</span></h2><p>${clear ? "두 가지 리듬을 끝까지 지켰어요." : engine.end === "dodge_collision" ? "야구공과 충돌했어요. 다음에는 조금 더 멀리." : "Match 생명이 소진됐어요. 모든 원을 타이밍에 맞춰 누르세요."}</p><div class="final-score">${s.total(engine.time).toLocaleString()}<small> / ${chart.maxScore.toLocaleString()} 이론상</small></div><div class="score-split"><span>DODGE <b>${(Math.floor(engine.time / 1000) * 100).toLocaleString()}</b></span><span>MATCH <b>${s.match.toLocaleString()}</b></span><span>TIME <b>${clock(engine.time)}</b></span></div><div class="grade-grid">${Object.entries(
       s.counts,
     )
       .map(([g, n]) => `<div><b>${n}</b><span>${g.toUpperCase()}</span></div>`)
@@ -213,6 +226,11 @@ class PlayScene extends Scene {
   create() {
     scene = this;
     this.textures.addImage("dog", dogImage);
+    this.textures.addImage("dog-cry", cryImage);
+    const frame = happyFrame(loadingImage);
+    this.textures
+      .addImage("dog-loading", loadingImage)!
+      .add("happy", 0, frame.x, frame.y, frame.width, frame.height);
     this.g = this.add.graphics();
     this.dog = this.add.image(0, 0, "dog").setDepth(2);
     this.input.addPointer(4);
@@ -340,8 +358,18 @@ class PlayScene extends Scene {
         if (prefs.vibration && g === "Miss") navigator.vibrate?.(40);
         lastGradeCount = count;
       }
-      if (engine.end) result();
+      if (engine.end === "dodge_collision") {
+        state = "ending";
+        collisionStarted = performance.now();
+        clearInput();
+        pauseButton.hidden = true;
+      } else if (engine.end) result();
     }
+    if (
+      state === "ending" &&
+      performance.now() - collisionStarted >= COLLISION_MS
+    )
+      result();
     this.draw();
   }
   draw() {
@@ -360,48 +388,75 @@ class PlayScene extends Scene {
       size = 744,
       u = 7.44;
     g.fillStyle(0x0e1628).fillRoundedRect(mx, 120, size, size, 12);
-    for (let i = 0; i < e.zones.stage; i++) {
-      const right = i % 2,
-        bottom = Number(i >= 2);
-      const width =
-        e.zones.stage === 1 || (e.zones.stage === 3 && i === 2)
-          ? size
-          : size / 2;
-      const height = e.zones.stage <= 2 ? size : size / 2;
-      const x = dx + (e.zones.stage === 3 && i === 2 ? 0 : (right * size) / 2),
-        y = 120 + (bottom * size) / 2;
+    for (let i = 0; i < 16; i++) {
+      const width = size / 4,
+        x = dx + (i % 4) * width,
+        y = 120 + Math.floor(i / 4) * width;
       const rgb = e.zones.display(i, e.time).map((v) => Math.floor(v * 0.24));
-      const c = (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
-      g.fillStyle(c).fillRect(x, y, width, height);
-      this.label(
-        x + width / 2,
-        y + height / 2 - 55,
-        GLYPHS[e.zones.zones[i].color],
-        110,
-        "#c5d4eb",
-        "center",
-        0.06,
+      g.fillStyle((rgb[0] << 16) | (rgb[1] << 8) | rgb[2]).fillRect(
+        x,
+        y,
+        width,
+        width,
       );
+      e.zones.glyphs(i, e.time).forEach((weight, color) => {
+        if (weight > 0.001)
+          this.label(
+            x + width / 2,
+            y + width / 2 - 35,
+            GLYPHS[color],
+            70,
+            "#c5d4eb",
+            "center",
+            0.06 * weight,
+          );
+      });
+      const pulse = Math.max(0, 1 - (e.time - e.zones.zones[i].changed) / 350);
+      if (pulse > 0) {
+        g.fillStyle(0xdbfff2, 0.14 * pulse).fillRect(x, y, width, width);
+        g.lineStyle(3, 0xb9ffe7, pulse).strokeRect(
+          x + 2,
+          y + 2,
+          width - 4,
+          width - 4,
+        );
+      }
     }
     g.lineStyle(0.93, 0x050914);
-    if (e.zones.stage >= 2)
-      g.lineBetween(
-        dx + size / 2,
-        120,
-        dx + size / 2,
-        e.zones.stage === 3 ? 120 + size / 2 : 864,
-      );
-    if (e.zones.stage >= 3)
-      g.lineBetween(dx, 120 + size / 2, dx + size, 120 + size / 2);
+    for (let i = 1; i < 4; i++) {
+      g.lineBetween(dx + (i * size) / 4, 120, dx + (i * size) / 4, 864);
+      g.lineBetween(dx, 120 + (i * size) / 4, dx + size, 120 + (i * size) / 4);
+    }
     const pc = COLORS[e.zones.zones[Math.max(0, e.zones.current)].color];
     const px = dx + e.player.x * u,
       py = 120 + e.player.y * u;
     g.fillStyle(pc, 0.23).fillCircle(px, py, 24);
     g.lineStyle(1.5, pc, 0.7).strokeCircle(px, py, 24);
+    const motion = dogMotion(
+      e.time,
+      e.successAt,
+      e.end,
+      performance.now() - collisionStarted,
+      prefs.reduced,
+    );
     this.dog
-      .setPosition(px, py - 7)
-      .setDisplaySize(4 * u, 4 * u)
-      .setRotation(prefs.reduced ? 0 : e.move.x * 0.1);
+      .setTexture(
+        motion.kind === "happy"
+          ? "dog-loading"
+          : motion.kind === "cry"
+            ? "dog-cry"
+            : "dog",
+        motion.kind === "happy" ? "happy" : undefined,
+      )
+      .setOrigin(0.5, 1);
+    const spriteScale =
+      (4 * u) / Math.max(this.dog.frame.width, this.dog.frame.height);
+    this.dog
+      .setScale(spriteScale)
+      .setPosition(px, py - motion.lift * u)
+      .setRotation(
+        motion.kind === "happy" || prefs.reduced ? 0 : e.move.x * 0.1,
+      );
     g.fillStyle(0xd8faff).fillCircle(px, py, 2);
     this.label(
       px,
@@ -411,8 +466,6 @@ class PlayScene extends Scene {
       "#" + pc.toString(16),
       "center",
     );
-    if (e.cryUntil > e.time)
-      this.label(px + 20, py - 12, "ㅠoㅠ", 18, "#aadeff");
     const padPos = this.padCenter(),
       ps = this.padScale();
     g.fillStyle(0x080d1b, 0.5)
@@ -488,9 +541,9 @@ class PlayScene extends Scene {
         "#7e8ca7",
         "center",
       );
-      if (t.locked && t.forbidden) {
+      if (t.color === e.zones.zones[e.zones.current].color) {
         g.lineStyle(8, 0xe4eaff, 0.7).strokeCircle(x, y, r + 9);
-        this.label(x, y + r - 26, "PASS", 15, "#f8faff", "center");
+        this.label(x, y + r - 26, "×2", 19, "#f8faff", "center");
       }
     }
     for (const f of e.feedback) {
@@ -542,7 +595,7 @@ class PlayScene extends Scene {
     );
     this.label(805, 47, String(e.score.life), 22);
     const id = Math.max(0, e.zones.current);
-    this.label(880, 20, "DO NOT TAP", 14, "#8291aa");
+    this.label(880, 20, "CURRENT TILE", 14, "#8291aa");
     this.label(
       880,
       46,
@@ -550,29 +603,8 @@ class PlayScene extends Scene {
       25,
       "#" + pc.toString(16),
     );
-    const times = e.zones.zones.map((z) => z.next);
-    if (e.zones.stage < 4) {
-      this.label(1130, 20, "NEXT ZONE", 14, "#8291aa");
-      this.label(
-        1130,
-        46,
-        ((e.zones.stage * 15000 - e.time) / 1000).toFixed(3),
-        25,
-      );
-    } else if (times.every((t) => t === times[0])) {
-      this.label(1130, 20, "SHIFT ALL", 14, "#8291aa");
-      this.label(1130, 46, ((times[0] - e.time) / 1000).toFixed(3), 25);
-    } else {
-      this.label(1110, 10, "ZONE SHIFT", 12, "#8291aa");
-      times.forEach((t, i) =>
-        this.label(
-          1110 + (i % 2) * 115,
-          31 + Math.floor(i / 2) * 27,
-          `${i + 1} ${((t - e.time) / 1000).toFixed(3)}`,
-          20,
-        ),
-      );
-    }
+    this.label(1130, 20, "COLOR MATCH", 14, "#8291aa");
+    this.label(1130, 46, "SCORE ×2", 25, "#a6efd5");
     this.label(
       32,
       875,
@@ -632,6 +664,8 @@ async function boot() {
     });
     chart = assets.chart;
     dogImage = assets.dog;
+    loadingImage = assets.loading;
+    cryImage = assets.cry;
     clearTimeout(timeout);
     game = new Game({
       type: AUTO,

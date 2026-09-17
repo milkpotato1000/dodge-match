@@ -15,7 +15,7 @@ test("v2 displays 240 seconds and 247 targets and renders 96 physical hazards", 
     e.tick = 9900;
     e.nextTarget = e.chart.targets.length;
     e.targets = [];
-    for (let i = 0; i < 40; i++) e.zones.update(e.time);
+
     e.zones.resolve(e.player);
     e.balls = [];
     for (let i = 0; i < 96; i++) e.addBall(true);

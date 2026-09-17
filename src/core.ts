@@ -71,7 +71,7 @@ export class Score {
   maxRecovery = 0;
   maxMiss = 0;
   counts: Record<Grade, number> = { Perfect: 0, Great: 0, Good: 0, Miss: 0 };
-  judge(g: Grade) {
+  judge(g: Grade, matched = false) {
     this.counts[g]++;
     if (g === "Miss") {
       this.combo = 0;
@@ -81,9 +81,10 @@ export class Score {
     } else {
       this.missStreak = 0;
       this.combo++;
-      this.match += Math.round(
-        { Perfect: 100, Great: 70, Good: 40 }[g] * multiplier(this.combo),
-      );
+      this.match +=
+        Math.round(
+          { Perfect: 100, Great: 70, Good: 40 }[g] * multiplier(this.combo),
+        ) * (matched ? 2 : 1);
       if (g === "Good") this.recovery = 0;
       else {
         this.recovery++;
@@ -122,7 +123,7 @@ export function validateChart(c: Chart) {
     )
       throw Error("Invalid target timing");
     last = t.at;
-    s.judge("Perfect");
+    s.judge("Perfect", true);
     if (
       c.targets.filter(
         (other) => other.spawn <= t.spawn && other.at + 200 >= t.spawn,
@@ -130,7 +131,7 @@ export function validateChart(c: Chart) {
     )
       throw Error("Too many concurrent targets");
   }
-  if (s.total(c.durationMs) !== c.maxScore || c.maxScore !== 66775)
+  if (s.total(c.durationMs) !== c.maxScore || c.maxScore !== 109550)
     throw Error("Invalid maximum score");
   return c;
 }
@@ -196,110 +197,78 @@ export function travel(
 }
 export type Zone = {
   color: number;
-  next: number;
   changed: number;
   from: number[];
-  penalty: boolean;
+  fromGlyphs: number[];
 };
 function rgb(c: number) {
   return [(c >> 16) & 255, (c >> 8) & 255, c & 255];
 }
 export class Zones {
-  stage = 1;
-  current = 0;
-  zones: Zone[] = [];
+  current = -1;
+  zones: Zone[];
   constructor(
-    private rng: Random,
-    private penaltyRng: Random,
+    rng: Random,
+    private recolorRng: Random,
   ) {
-    this.structure(0);
-  }
-  structure(time: number) {
-    this.stage = time >= 45000 ? 4 : time >= 30000 ? 3 : time >= 15000 ? 2 : 1;
-    this.zones = Array.from({ length: this.stage }, () => ({
-      color: this.rng.int(7),
-      next: this.stage === 4 ? 50300 : Infinity,
-      changed: time,
-      from: [0, 0, 0],
-      penalty: false,
-    }));
+    this.zones = Array.from({ length: 16 }, () => {
+      const color = rng.int(7);
+      return {
+        color,
+        changed: -Infinity,
+        from: rgb(COLORS[color]),
+        fromGlyphs: GLYPHS.map((_, i) => Number(i === color)),
+      };
+    });
   }
   resolve(p: Vec, move: Vec = { x: 0, y: 0 }) {
-    if (this.stage === 1) return (this.current = 0);
-    const oldRight =
-      this.stage === 3 ? this.current === 1 : this.current % 2 === 1;
-    const right =
-      Math.abs(p.x - 50) <= 0.0625
-        ? this.current >= 0
-          ? oldRight
-          : move.x >= 0
-        : p.x > 50;
-    if (this.stage === 2) return (this.current = right ? 1 : 0);
-    const oldBottom = this.current >= 2;
-    const bottom =
-      Math.abs(p.y - 50) <= 0.0625
-        ? this.current >= 0
-          ? oldBottom
-          : move.y >= 0
-        : p.y > 50;
-    return (this.current = bottom
-      ? this.stage === 3
-        ? 2
-        : right
-          ? 3
-          : 2
-      : right
-        ? 1
-        : 0);
-  }
-  update(time: number) {
-    const stage = time >= 45000 ? 4 : time >= 30000 ? 3 : time >= 15000 ? 2 : 1;
-    if (stage !== this.stage) {
-      this.structure(time);
-      this.current = -1;
-    }
-    for (const z of this.zones)
-      if (time + 1e-7 >= z.next) {
-        z.color = this.rng.int(7);
-        z.changed = z.next;
-        z.next += 5300;
-        z.penalty = false;
-      }
+    const axis = (v: number, previous: number, delta: number) => {
+      for (let boundary = 1; boundary < 4; boundary++)
+        if (Math.abs(v - boundary * 25) <= 0.0625) {
+          return previous === boundary - 1 || previous === boundary
+            ? previous
+            : delta < 0
+              ? boundary - 1
+              : boundary;
+        }
+      return Math.max(0, Math.min(3, Math.floor(v / 25)));
+    };
+    const col = axis(p.x, this.current < 0 ? -1 : this.current % 4, move.x),
+      row = axis(
+        p.y,
+        this.current < 0 ? -1 : Math.floor(this.current / 4),
+        move.y,
+      );
+    return (this.current = row * 4 + col);
   }
   reroll(id: number, time: number) {
     const z = this.zones[id];
     if (!z) return;
-    const from = this.display(id, time);
-    z.color = (z.color + 1 + this.penaltyRng.int(6)) % 7;
-    z.from = from;
+    z.from = this.display(id, time);
+    z.fromGlyphs = this.glyphs(id, time);
+    z.color = this.recolorRng.int(7);
     z.changed = time;
-    z.penalty = true;
-    z.next = this.stage === 4 ? time + 5300 : Infinity;
+  }
+  progress(id: number, time: number) {
+    return Math.min(1, Math.max(0, (time - this.zones[id].changed) / 1000));
   }
   display(id: number, time: number) {
     const z = this.zones[id],
-      c = rgb(COLORS[z.color]);
-    if (z.penalty && time - z.changed < 1000) {
-      const t = Math.max(0, (time - z.changed) / 1000);
-      return c.map((v, i) => z.from[i] + (v - z.from[i]) * t);
-    }
-    const opacity =
-      this.stage < 4
-        ? 1
-        : Math.min(
-            1,
-            Math.max(0, (z.next - time) / 500),
-            Math.max(0, (time - z.changed) / 500),
-          );
-    return c.map((v) => v * opacity);
+      t = this.progress(id, time);
+    return rgb(COLORS[z.color]).map((v, i) => z.from[i] + (v - z.from[i]) * t);
+  }
+  glyphs(id: number, time: number) {
+    const z = this.zones[id],
+      t = this.progress(id, time);
+    return GLYPHS.map(
+      (_, i) => z.fromGlyphs[i] * (1 - t) + Number(i === z.color) * t,
+    );
   }
 }
 export type Target = TargetSpec &
   Vec & {
     color: number;
     locked: boolean;
-    forbidden: boolean;
-    lockedZoneId: number;
     judged: boolean;
   };
 export type Feedback = {
@@ -315,17 +284,17 @@ export class Engine {
   player: Vec = { x: 50, y: 50 };
   move: Vec = { x: 0, y: 0 };
   score = new Score();
+  successAt = -Infinity;
   zones: Zones;
   balls: Ball[] = [];
   targets: Target[] = [];
   end: End | null = null;
   feedback: Feedback[] = [];
-  cryUntil = 0;
   private ballRng: Random;
   private matchRng: Random;
   private nextTarget = 0;
   private nextBall = 0;
-  private taps: { id: number; time: number }[] = [];
+  private taps: { id: number; time: number; zoneId: number }[] = [];
   constructor(
     public chart: Chart,
     public seed: number,
@@ -338,6 +307,7 @@ export class Engine {
       new Random(seed ^ 0x4567),
     );
     for (let i = 0; i < this.chart.dodgeCurve[0][1]; i++) this.addBall(true);
+    this.zones.resolve(this.player);
     this.spawn();
   }
   difficulty() {
@@ -397,14 +367,19 @@ export class Engine {
     }
   }
   tap(id: number, time = this.time) {
-    if (!this.end) this.taps.push({ id, time });
+    if (!this.end)
+      this.taps.push({
+        id,
+        time,
+        zoneId: this.zones.resolve(this.player, this.move),
+      });
   }
-  private judge(t: Target, g: Grade, reason: string) {
+  private judge(t: Target, g: Grade, reason: string, matched = false) {
     if (t.judged) return;
     t.judged = true;
-    this.score.judge(g);
+    this.score.judge(g, matched);
+    if (matched) this.successAt = this.time;
     this.feedback.push({ time: this.time, grade: g, reason, x: t.x, y: t.y });
-    if (reason === "FORBIDDEN") this.cryUntil = this.time + 480;
     if (this.score.life === 0) this.end = "match_depleted";
   }
   private spawn() {
@@ -445,8 +420,6 @@ export class Engine {
         ...p,
         color: this.matchRng.int(7),
         locked: false,
-        forbidden: false,
-        lockedZoneId: -1,
         judged: false,
       });
     }
@@ -454,33 +427,33 @@ export class Engine {
   step() {
     if (this.end) return;
     this.time = ++this.tick * STEP;
-    const penalties: number[] = [];
     for (const tap of this.taps) {
       const t = this.targets.find((t) => t.id === tap.id && !t.judged);
       if (!t) continue;
-      const forbidden = t.locked && t.forbidden;
+      const result = grade(tap.time - t.at);
+      const matched =
+        result !== "Miss" && t.color === this.zones.zones[tap.zoneId].color;
       this.judge(
         t,
-        forbidden ? "Miss" : grade(tap.time - t.at),
-        forbidden ? "FORBIDDEN" : tap.time < t.at ? "EARLY" : "LATE",
+        result,
+        matched
+          ? "COLOR MATCH ×2"
+          : result === "Miss"
+            ? tap.time < t.at
+              ? "EARLY"
+              : "LATE"
+            : "",
+        matched,
       );
-      if (forbidden) penalties.push(t.lockedZoneId);
+      if (matched) this.zones.reroll(tap.zoneId, this.time);
       if (this.end) break;
     }
     this.taps = [];
     for (const t of this.targets)
       if (!this.end && !t.judged && this.time > t.at + 200 + 1e-7)
-        this.judge(
-          t,
-          t.forbidden ? "Perfect" : "Miss",
-          t.forbidden ? "SAFE" : "MISSED",
-        );
-    if (this.end) {
-      this.zones.update(this.time);
-      for (const id of penalties) this.zones.reroll(id, this.time);
-      this.zones.resolve(this.player, this.move);
-      return;
-    }
+        this.judge(t, "Miss", "MISSED");
+    this.zones.resolve(this.player, this.move);
+    if (this.end) return;
     const old = { ...this.player };
     const v = direction(Math.sign(this.move.x), Math.sign(this.move.y));
     this.player.x = Math.max(
@@ -491,15 +464,11 @@ export class Engine {
       2,
       Math.min(HEIGHT - 2, this.player.y + (v.y * PLAYER_SPEED) / 60),
     );
-    this.zones.update(this.time);
-    for (const id of penalties) this.zones.reroll(id, this.time);
     this.zones.resolve(this.player, this.move);
     this.spawn();
     for (const t of this.targets)
       if (!t.judged && !t.locked && this.time + 1e-7 >= t.at - 200) {
         t.locked = true;
-        t.lockedZoneId = this.zones.current;
-        t.forbidden = t.color === this.zones.zones[t.lockedZoneId].color;
       }
     const diff = this.difficulty();
     if (this.balls.length < diff.count) this.addBall();

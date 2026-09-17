@@ -1,7 +1,7 @@
 import { validateChart, type Chart } from "./core";
 export async function preload(onProgress: (n: number) => void) {
   let completed = 0;
-  const finish = () => onProgress((++completed / 3) * 100);
+  const finish = () => onProgress((++completed / 4) * 100);
   const loadImage = async (url: string) => {
     const im = new Image();
     im.src = url;
@@ -9,9 +9,10 @@ export async function preload(onProgress: (n: number) => void) {
     finish();
     return im;
   };
-  const [dog, loading, chart] = await Promise.all([
+  const [dog, loading, cry, chart] = await Promise.all([
     loadImage("/assets/dog.png"),
     loadImage("/assets/loading.png"),
+    loadImage("/assets/dog-cry.png"),
     fetch("/chart.json")
       .then((r) => {
         if (!r.ok) throw Error("차트 로드 실패");
@@ -23,5 +24,5 @@ export async function preload(onProgress: (n: number) => void) {
         return c;
       }),
   ]);
-  return { dog, loading, chart };
+  return { dog, loading, cry, chart };
 }

@@ -1,4 +1,4 @@
-const CACHE = "dodge-match-first-playable-v2";
+const CACHE = "dodge-match-tile-match-v3";
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
@@ -14,6 +14,7 @@ self.addEventListener("install", (event) => {
           "/chart.json",
           "/assets/dog.png",
           "/assets/loading.png",
+          "/assets/dog-cry.png",
           "/icon.svg",
           "/manifest.webmanifest",
           ...builtAssets,

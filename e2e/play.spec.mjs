@@ -141,7 +141,7 @@ test("mobile landscape supports simultaneous D-pad and Match touches", async ({
   });
   await context.close();
 });
-test("four-zone scene renders after accelerated verified chart fixture", async ({
+test("sixteen-tile scene renders after accelerated verified chart fixture", async ({
   page,
 }) => {
   await page.goto("/");
@@ -152,21 +152,17 @@ test("four-zone scene renders after accelerated verified chart fixture", async (
     while (e.time < 51000 && !e.end) {
       e.balls = [];
       for (const t of e.targets)
-        if (
-          !t.judged &&
-          t.locked &&
-          !t.forbidden &&
-          Math.abs(e.time - t.at) < 10
-        )
-          e.tap(t.id);
+        if (!t.judged && t.locked && Math.abs(e.time - t.at) < 10) e.tap(t.id);
       e.step();
     }
     e.zones.reroll(2, e.time);
   });
   await page.waitForTimeout(50);
   await page.screenshot({
-    path: "docs/verification/first-playable/four-zone.png",
+    path: "docs/verification/tile-match-v3/sixteen-tile.png",
   });
-  expect(await page.evaluate(() => window.__dodge.engine.zones.stage)).toBe(4);
+  expect(
+    await page.evaluate(() => window.__dodge.engine.zones.zones.length),
+  ).toBe(16);
   await page.keyboard.press("Escape");
 });

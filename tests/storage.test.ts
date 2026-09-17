@@ -45,8 +45,8 @@ it("persists settings and result details with chart version and seed", () => {
     seed: 123,
     match: 70,
     result: "dodge_collision",
-    chartVersion: "2",
-    rulesetVersion: "2",
+    chartVersion: "3",
+    rulesetVersion: "3",
   });
 });
 it("rejects malformed stored records and sorts score ties by survival", () => {

@@ -16,9 +16,9 @@ describe("adopted gameplay rules", () => {
   it("validates 247 chart targets and independent maximum score", () => {
     expect(validateChart(chart).targets.at(-1)?.at).toBe(239625);
     const s = new Score();
-    for (let i = 0; i < 247; i++) s.judge("Perfect");
-    expect(s.match).toBe(42775);
-    expect(s.total(240000)).toBe(66775);
+    for (let i = 0; i < 247; i++) s.judge("Perfect", true);
+    expect(s.match).toBe(85550);
+    expect(s.total(240000)).toBe(109550);
     expect(s.total(1999) - s.match).toBe(100);
   });
   it.each([
@@ -100,38 +100,6 @@ describe("adopted gameplay rules", () => {
     expect(b.y).toBeCloseTo(a.y);
     expect(b.vx).toBe(a.vx);
   });
-  it("keeps the prior zone within the hairline and switches outside", () => {
-    const z = new Zones(new Random(1), new Random(2));
-    z.update(45000);
-    z.current = 0;
-    expect(z.resolve({ x: 50.0625, y: 20 })).toBe(0);
-    expect(z.resolve({ x: 50.0626, y: 20 })).toBe(1);
-    expect(z.resolve({ x: 49.9375, y: 20 })).toBe(1);
-    expect(z.resolve({ x: 49.9374, y: 20 })).toBe(0);
-  });
-  it("starts all timers at 50.300 and splits only the penalized zone", () => {
-    const z = new Zones(new Random(1), new Random(2));
-    z.update(45000);
-    expect(z.zones.map((t) => t.next)).toEqual([50300, 50300, 50300, 50300]);
-    z.update(50300);
-    const colors = z.zones.map((t) => t.color);
-    z.reroll(2, 51000);
-    expect(z.zones[2].next).toBe(56300);
-    expect(z.zones[0].next).toBe(55600);
-    expect(z.zones[2].color).not.toBe(colors[2]);
-    expect(z.zones[0].color).toBe(colors[0]);
-  });
-  it("penalty fade starts from the current composite and keeps logical color separate", () => {
-    const z = new Zones(new Random(1), new Random(2));
-    z.update(45000);
-    const before = z.display(0, 47000);
-    z.reroll(0, 47000);
-    expect(z.display(0, 47000)).toEqual(before);
-    const mid = z.display(0, 47500);
-    z.reroll(0, 47500);
-    expect(z.display(0, 47500)).toEqual(mid);
-    expect(z.display(0, 48500)).not.toEqual(mid);
-  });
   it("replays seed, input, balls and targets deterministically", () => {
     const a = new Engine(chart, 1234),
       b = new Engine(chart, 1234);
@@ -145,43 +113,19 @@ describe("adopted gameplay rules", () => {
       new Engine(chart, 1234).balls,
     );
   });
-  it("locks forbidden state and auto-awards a perfect on no touch", () => {
-    const e = new Engine(chart, 42);
-    e.balls = [];
-    e.targets[0].color = e.zones.zones[0].color;
-    while (e.time < 1800) e.step();
-    expect(e.targets[0].forbidden).toBe(true);
-    while (e.time < 2210) e.step();
-    expect(e.score.counts.Perfect).toBe(1);
-  });
-  it("forbidden touch rerolls the locked zone and records a miss", () => {
-    const e = new Engine(chart, 42);
-    e.balls = [];
-    e.targets[0].color = e.zones.zones[0].color;
-    while (e.time < 1900) e.step();
-    const old = e.zones.zones[0].color;
-    e.tap(0);
-    e.step();
-    expect(e.score.counts.Miss).toBe(1);
-    expect(e.zones.zones[0].color).not.toBe(old);
-    expect(e.cryUntil).toBeGreaterThan(e.time);
-  });
   it("exercises a full 240-second chart with collision-free test fixture", () => {
     const e = new Engine(chart, 999);
     for (let i = 0; i < 14400; i++) {
       e.balls = [];
       for (const t of e.targets)
-        if (
-          !t.judged &&
-          t.locked &&
-          !t.forbidden &&
-          Math.abs(e.time - t.at) <= STEP / 2
-        )
+        if (!t.judged && t.locked && Math.abs(e.time - t.at) <= STEP / 2) {
+          e.zones.zones[e.zones.resolve(e.player)].color = t.color;
           e.tap(t.id);
+        }
       e.step();
     }
     expect(e.end).toBe("chart_complete");
     expect(e.score.counts.Perfect).toBe(247);
-    expect(e.score.total(e.time)).toBe(66775);
+    expect(e.score.total(e.time)).toBe(109550);
   });
 });
