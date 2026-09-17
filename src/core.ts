@@ -48,7 +48,7 @@ export class Random {
 }
 export function grade(delta: number): Grade {
   const d = Math.abs(delta);
-  return d <= 60 ? "Perfect" : d <= 120 ? "Great" : d <= 200 ? "Good" : "Miss";
+  return d <= 70 ? "Perfect" : d <= 120 ? "Great" : d <= 200 ? "Good" : "Miss";
 }
 export function multiplier(combo: number) {
   return combo >= 100

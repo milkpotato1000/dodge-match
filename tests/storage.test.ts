@@ -46,7 +46,7 @@ it("persists settings and result details with chart version and seed", () => {
     match: 70,
     result: "dodge_collision",
     chartVersion: "3",
-    rulesetVersion: "3",
+    rulesetVersion: "4",
   });
 });
 it("rejects malformed stored records and sorts score ties by survival", () => {
@@ -98,8 +98,8 @@ it("keeps old records but filters versions before taking the top 100", async () 
     ...current,
     runId: String(i),
     name: "old",
-    chartVersion: "1",
-    rulesetVersion: "1",
+    chartVersion: "3",
+    rulesetVersion: "3",
     total: 99999,
   }));
   data.set(key + ":records", JSON.stringify([...old, current]));

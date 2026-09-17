@@ -1,7 +1,7 @@
 {
   "chartId": "first-orbit",
   "chartVersion": "3",
-  "rulesetVersion": "3",
+  "rulesetVersion": "4",
   "durationMs": 240000,
   "bpm": 120,
   "timeSignature": "4/4",
