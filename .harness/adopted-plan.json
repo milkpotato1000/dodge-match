@@ -1,4 +1,4 @@
 {
-  "commit": "d65a9a08825fa5749e983ae293aab69142df674a",
-  "review_reference": "User requested 16 persistent tiles, click-time color match double combo score and immediate successful-tile recolor"
+  "commit": "8d70f64aeffd40e2bbd7bb5f68c074606cf992c3",
+  "review_reference": "User specified existing loading jump frame for matched tiles; crying only on baseball collision"
 }
