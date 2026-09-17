@@ -1,4 +1,4 @@
 {
-  "commit": "4bf5f78163bf8a3674143e160e392b0033d5a769",
-  "review_reference": "User requested 240 seconds, triple baseball counts and additions, 30 percent slower player, faster baseballs; v2 speed uplift 30 percent"
+  "commit": "d65a9a08825fa5749e983ae293aab69142df674a",
+  "review_reference": "User requested 16 persistent tiles, click-time color match double combo score and immediate successful-tile recolor"
 }
