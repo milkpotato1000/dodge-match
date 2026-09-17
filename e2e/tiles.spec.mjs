@@ -33,17 +33,18 @@ test("matching tile doubles combo score, reuses loading jump, and collision uses
       e = d.engine;
     e.step();
     d.scene.draw();
-    // Render without advancing game time so the short reaction is captured deterministically.
-    d.game.loop.wake();
-    return {
+    const snapshot = {
       score: e.score.match,
       combo: e.score.combo,
       changed: e.zones.zones[e.zones.current].changed,
-      time: e.time,
+      successAt: e.successAt,
       count: e.zones.zones.length,
       texture: d.scene.dog.texture.key,
       frame: d.scene.dog.frame.name,
     };
+    // Waking Phaser may immediately advance multiple fixed steps; snapshot before it.
+    d.game.loop.wake();
+    return snapshot;
   });
   expect(matched).toMatchObject({
     score: 200,
@@ -52,11 +53,13 @@ test("matching tile doubles combo score, reuses loading jump, and collision uses
     texture: "dog-loading",
     frame: "happy",
   });
-  expect(matched.time - matched.changed).toBeLessThanOrEqual(17);
+  expect(matched.changed).toBe(matched.successAt);
   await page.screenshot({
     path: "docs/verification/tile-match-v3/success.png",
   });
-  await page.waitForTimeout(350);
+  await page.waitForFunction(
+    () => window.__dodge.scene.dog.texture.key === "dog",
+  );
   expect(await page.evaluate(() => window.__dodge.scene.dog.texture.key)).toBe(
     "dog",
   );

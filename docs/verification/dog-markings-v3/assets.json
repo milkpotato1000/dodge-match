@@ -1,0 +1,26 @@
+{
+  "dog.png": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "sha256": "f7c4edbafdb742ef88cc829353ff13380b4289f96e9c6126098a3f484b51dec6"
+  },
+  "dog-cry.png": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "sha256": "3115c07233e735b51bc513ce53449861667b60e6ca1ff4ebce76489eec3279f8"
+  },
+  "loading.png": {
+    "size": [
+      2171,
+      724
+    ],
+    "mode": "RGBA",
+    "sha256": "2af3b51364ced86265d59da1f4609c4452be513fdf240a9f2fb00bf42b717d44"
+  }
+}

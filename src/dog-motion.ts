@@ -23,43 +23,14 @@ export function dogMotion(
     };
   return { kind: "idle" as const, lift: 0 };
 }
-/** Crop transparent padding from the fourth EXISTING loading frame, without modifying the source. */
+/** The existing fourth pose, bounded separately from its neighbors in the edited sheet. */
 export function happyFrame(image: HTMLImageElement) {
-  const width = image.naturalWidth / 6,
-    canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = image.naturalHeight;
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(
-    image,
-    3 * width,
-    0,
-    width,
-    image.naturalHeight,
-    0,
-    0,
-    width,
-    image.naturalHeight,
-  );
-  const pixels = ctx.getImageData(0, 0, width, canvas.height).data;
-  let left = width,
-    top = canvas.height,
-    right = 0,
-    bottom = 0;
-  for (let y = 0; y < canvas.height; y++)
-    for (let x = 0; x < width; x++)
-      if (pixels[(y * width + x) * 4 + 3] > 8) {
-        left = Math.min(left, x);
-        right = Math.max(right, x);
-        top = Math.min(top, y);
-        bottom = Math.max(bottom, y);
-      }
-  return right >= left
-    ? {
-        x: 3 * width + left,
-        y: top,
-        width: right - left + 1,
-        height: bottom - top + 1,
-      }
-    : { x: 3 * width, y: 0, width, height: canvas.height };
+  const sx = image.naturalWidth / 2171,
+    sy = image.naturalHeight / 724;
+  return {
+    x: Math.round(1160 * sx),
+    y: Math.round(210 * sy),
+    width: Math.round(290 * sx),
+    height: Math.round(350 * sy),
+  };
 }

@@ -468,15 +468,38 @@ td small {
   position: absolute;
   bottom: 6px;
   left: 0;
-  width: 72px;
+  width: 63px;
   height: 72px;
-  background: url("/assets/loading.png") 0 0/432px 144px;
-  animation: run 0.5s steps(6) infinite;
+  background: url("/assets/loading.png") -3px -42px/434.2px 144.8px;
+  animation: run 0.5s steps(1, end) infinite;
   transform: translateX(-50%);
 }
+/* Six preserved poses have different transparent bounds; clip each whole pose. */
 @keyframes run {
-  to {
-    background-position: -432px 0;
+  0%,
+  100% {
+    width: 63px;
+    background-position-x: -3px;
+  }
+  16.6667% {
+    width: 75px;
+    background-position-x: -73px;
+  }
+  33.3333% {
+    width: 67.2px;
+    background-position-x: -155.6px;
+  }
+  50% {
+    width: 58.6px;
+    background-position-x: -231.4px;
+  }
+  66.6667% {
+    width: 72.6px;
+    background-position-x: -291.8px;
+  }
+  83.3333% {
+    width: 62.4px;
+    background-position-x: -368.4px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

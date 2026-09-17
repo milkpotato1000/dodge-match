@@ -1,4 +1,4 @@
-const CACHE = "dodge-match-tile-match-v3";
+const CACHE = "dodge-match-dog-natural-v3";
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
