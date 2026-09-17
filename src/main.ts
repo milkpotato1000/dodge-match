@@ -1,3 +1,8 @@
+import {
+  isMovementCode,
+  keyboardVector,
+  type KeyboardLayout,
+} from "./keyboard";
 import { Game, Scene, AUTO, Scale, GameObjects } from "phaser";
 import { Engine, COLORS, GLYPHS, NAMES, STEP, type Chart } from "./core";
 import {
@@ -51,6 +56,25 @@ function shell(content: string) {
   overlay.innerHTML = content;
   overlay.hidden = false;
 }
+function keyboardForm() {
+  return `<label class="keyboard-setting" for="keyboard-layout">PC 이동 키<select id="keyboard-layout"><option value="wasd" ${prefs.keyboardLayout === "wasd" ? "selected" : ""}>WASD</option><option value="arrows" ${prefs.keyboardLayout === "arrows" ? "selected" : ""}>방향키 ↑ ↓ ← →</option></select></label>`;
+}
+function bindKeyboard() {
+  document.querySelector<HTMLSelectElement>("#keyboard-layout")!.onchange = (
+    event,
+  ) => {
+    clearInput();
+    prefs.keyboardLayout = (event.target as HTMLSelectElement)
+      .value as KeyboardLayout;
+    saveSettings(prefs);
+  };
+}
+function isEditing(target: EventTarget | null) {
+  return (
+    target instanceof HTMLElement &&
+    (target.matches("input, textarea, select") || target.isContentEditable)
+  );
+}
 function musicForm() {
   return `<label class="toggle"><input id="music" type="checkbox" ${prefs.music ? "checked" : ""}> MUSIC <span>120 BPM 테스트 클릭</span></label><label class="range">음악 음량<input id="volume" type="range" min="0" max="1" step=".05" value="${prefs.volume}"></label><label class="range">효과음<input id="sfx" type="range" min="0" max="1" step=".05" value="${prefs.sfx}"></label>`;
 }
@@ -68,9 +92,10 @@ function setup() {
   pauseButton.hidden = true;
   clearInput();
   shell(
-    `<section class="menu"><div class="intro"><div class="eyebrow"><i></i> NEON ORBIT ARCADE <span>01 / FIRST ORBIT</span></div><h1>DODGE<span> / </span><br>MATCH<span class="period">.</span></h1><p class="tagline">두 가지 본능. 하나의 리듬.</p><p class="description">야구공을 피하며, 링이 닿는 순간 색을 맞추세요.<br>지금 밟고 있는 색은 누르지 마세요.</p><div class="instructions"><div><b>01</b><strong>MOVE</strong><span>WASD · 방향키 · D-pad</span></div><div><b>02</b><strong>MATCH</strong><span>링이 닿으면 탭 / 같은 색은 패스</span></div><div><b>03</b><strong>SURVIVE</strong><span>180초 · 한 번의 충돌로 종료</span></div></div><div class="menu-foot">180 SEC <span>×</span> 151 TARGETS <span>×</span> 7 COLORS</div></div><div class="launch"><div class="dog-preview"><div class="orbit"></div><img src="/assets/dog.png" alt="흰 털과 검은 귀의 플레이어 강아지"><span>READY TO PLAY?</span></div><form id="setup-form"><label class="field">PLAYER NAME<input id="name" maxlength="16" value="${esc(prefs.name)}" required autocomplete="nickname"></label><div class="layout-label">PLAYFIELD ORDER</div><div class="segmented"><button type="button" id="normal" class="${prefs.swapped ? "" : "selected"}">DODGE / MATCH</button><button type="button" id="swapped" class="${prefs.swapped ? "selected" : ""}">MATCH / DODGE</button></div><details><summary>사운드 · 접근성 설정 <span>＋</span></summary>${musicForm()}<label class="toggle"><input id="reduced" type="checkbox" ${prefs.reduced ? "checked" : ""}> Reduced Effects</label><label class="toggle"><input id="vibration" type="checkbox" ${prefs.vibration ? "checked" : ""}> 진동</label><label class="range">오디오 보정 (ms)<input id="offset" type="number" min="-300" max="300" value="${prefs.offset}"></label><div class="legend">${GLYPHS.map((g, i) => `<span style="color:#${COLORS[i].toString(16)}">${g} ${NAMES[i]}</span>`).join("")}</div></details><button class="primary" type="submit">플레이 시작 <span>↗</span></button><button type="button" class="text-button" id="board">로컬 기록 보기 <span>→</span></button></form><small>최고 기록 ${ranked()[0]?.total.toLocaleString() ?? "—"} <span> / </span> 이 기기에 저장</small></div></section>`,
+    `<section class="menu"><div class="intro"><div class="eyebrow"><i></i> NEON ORBIT ARCADE <span>01 / FIRST ORBIT</span></div><h1>DODGE<span> / </span><br>MATCH<span class="period">.</span></h1><p class="tagline">두 가지 본능. 하나의 리듬.</p><p class="description">야구공을 피하며, 링이 닿는 순간 색을 맞추세요.<br>지금 밟고 있는 색은 누르지 마세요.</p><div class="instructions"><div><b>01</b><strong>MOVE</strong><span>선택한 PC 이동 키 · D-pad</span></div><div><b>02</b><strong>MATCH</strong><span>링이 닿으면 탭 / 같은 색은 패스</span></div><div><b>03</b><strong>SURVIVE</strong><span>180초 · 한 번의 충돌로 종료</span></div></div><div class="menu-foot">180 SEC <span>×</span> 151 TARGETS <span>×</span> 7 COLORS</div></div><div class="launch"><div class="dog-preview"><div class="orbit"></div><img src="/assets/dog.png" alt="흰 털과 검은 귀의 플레이어 강아지"><span>READY TO PLAY?</span></div><form id="setup-form"><label class="field">PLAYER NAME<input id="name" maxlength="16" value="${esc(prefs.name)}" required autocomplete="nickname"></label><div class="layout-label">PLAYFIELD ORDER</div><div class="segmented"><button type="button" id="normal" class="${prefs.swapped ? "" : "selected"}">DODGE / MATCH</button><button type="button" id="swapped" class="${prefs.swapped ? "selected" : ""}">MATCH / DODGE</button></div>${keyboardForm()}<details><summary>사운드 · 접근성 설정 <span>＋</span></summary>${musicForm()}<label class="toggle"><input id="reduced" type="checkbox" ${prefs.reduced ? "checked" : ""}> Reduced Effects</label><label class="toggle"><input id="vibration" type="checkbox" ${prefs.vibration ? "checked" : ""}> 진동</label><label class="range">오디오 보정 (ms)<input id="offset" type="number" min="-300" max="300" value="${prefs.offset}"></label><div class="legend">${GLYPHS.map((g, i) => `<span style="color:#${COLORS[i].toString(16)}">${g} ${NAMES[i]}</span>`).join("")}</div></details><button class="primary" type="submit">플레이 시작 <span>↗</span></button><button type="button" class="text-button" id="board">로컬 기록 보기 <span>→</span></button></form><small>최고 기록 ${ranked()[0]?.total.toLocaleString() ?? "—"} <span> / </span> 이 기기에 저장</small></div></section>`,
   );
   bindMusic();
+  bindKeyboard();
   document.getElementById("normal")!.onclick = () => {
     prefs.swapped = false;
     saveSettings(prefs);
@@ -117,6 +142,8 @@ function start(seed = crypto.getRandomValues(new Uint32Array(1))[0]) {
   countdown();
 }
 function countdown() {
+  if (overlay.contains(document.activeElement))
+    (document.activeElement as HTMLElement | null)?.blur();
   state = "countdown";
   clearInput();
   accumulator = 0;
@@ -132,9 +159,10 @@ function pause() {
   clearInput();
   accumulator = 0;
   shell(
-    `<section class="modal"><div class="eyebrow">TAKE A BREATH</div><h2>PAUSED<span>.</span></h2><p>시계가 멈췄어요. 준비되면 다시 시작하세요.</p>${musicForm()}<button class="primary" id="resume">계속하기 <span>→</span></button><button class="text-button" id="quit">시작 화면으로</button></section>`,
+    `<section class="modal"><div class="eyebrow">TAKE A BREATH</div><h2>PAUSED<span>.</span></h2><p>시계가 멈췄어요. 준비되면 다시 시작하세요.</p>${keyboardForm()}${musicForm()}<button class="primary" id="resume">계속하기 <span>→</span></button><button class="text-button" id="quit">시작 화면으로</button></section>`,
   );
   bindMusic();
+  bindKeyboard();
   document.getElementById("resume")!.onclick = () => {
     audio.unlock();
     countdown();
@@ -291,16 +319,10 @@ class PlayScene extends Scene {
       }
     }
     if (playing()) {
-      engine.move = {
-        x:
-          pad.x +
-          Number(keys.has("d") || keys.has("arrowright")) -
-          Number(keys.has("a") || keys.has("arrowleft")),
-        y:
-          pad.y +
-          Number(keys.has("s") || keys.has("arrowdown")) -
-          Number(keys.has("w") || keys.has("arrowup")),
-      };
+      const movement = isEditing(document.activeElement)
+        ? { x: 0, y: 0 }
+        : keyboardVector(keys, prefs.keyboardLayout);
+      engine.move = { x: pad.x + movement.x, y: pad.y + movement.y };
       accumulator += Math.min(delta, 100);
       while (accumulator >= STEP && !engine.end) {
         engine.step();
@@ -544,7 +566,13 @@ class PlayScene extends Scene {
         ),
       );
     }
-    this.label(32, 875, "WASD / ↑↓←→", 13, "#596c89");
+    this.label(
+      32,
+      875,
+      prefs.keyboardLayout === "wasd" ? "WASD" : "↑↓←→",
+      13,
+      "#596c89",
+    );
     this.label(800, 875, "FIRST ORBIT · 120 BPM", 13, "#596c89", "center");
     this.label(1310, 875, "ESC · PAUSE", 13, "#596c89");
     for (let i = this.used; i < this.texts.length; i++)
@@ -552,28 +580,24 @@ class PlayScene extends Scene {
   }
 }
 window.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
+  if (e.code === "Escape") {
     pause();
     return;
   }
-  if (
-    playing() &&
-    [
-      "w",
-      "a",
-      "s",
-      "d",
-      "arrowup",
-      "arrowdown",
-      "arrowleft",
-      "arrowright",
-    ].includes(e.key.toLowerCase())
-  ) {
-    e.preventDefault();
-    keys.add(e.key.toLowerCase());
+  if (isEditing(e.target) || isEditing(document.activeElement)) {
+    clearInput();
+    return;
   }
+  if (!playing() || !isMovementCode(e.code, prefs.keyboardLayout)) return;
+  e.preventDefault();
+  // A held key after pause/layout change must be released and pressed again.
+  if (e.repeat && !keys.has(e.code)) return;
+  keys.add(e.code);
 });
-window.addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
+window.addEventListener("keyup", (e) => keys.delete(e.code));
+document.addEventListener("focusin", (e) => {
+  if (isEditing(e.target)) clearInput();
+});
 window.addEventListener("blur", pause);
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) pause();

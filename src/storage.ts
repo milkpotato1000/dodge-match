@@ -1,7 +1,9 @@
+import type { KeyboardLayout } from "./keyboard";
 import type { Engine } from "./core";
 export type Settings = {
   name: string;
   swapped: boolean;
+  keyboardLayout: KeyboardLayout;
   music: boolean;
   volume: number;
   sfx: number;
@@ -12,6 +14,7 @@ export type Settings = {
 export const defaults: Settings = {
   name: "PLAYER",
   swapped: false,
+  keyboardLayout: "wasd",
   music: true,
   volume: 0.25,
   sfx: 0.4,
@@ -66,6 +69,7 @@ export function settings(): Settings {
   return {
     name: typeof s.name === "string" ? s.name.slice(0, 16) : defaults.name,
     swapped: s.swapped === true,
+    keyboardLayout: s.keyboardLayout === "arrows" ? "arrows" : "wasd",
     music: typeof s.music === "boolean" ? s.music : defaults.music,
     volume: bounded(s.volume, defaults.volume, 0, 1),
     sfx: bounded(s.sfx, defaults.sfx, 0, 1),

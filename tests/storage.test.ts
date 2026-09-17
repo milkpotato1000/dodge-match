@@ -77,3 +77,14 @@ it("does not interrupt a game when storage access is denied", () => {
   e.end = "match_depleted";
   expect(() => recordRun(e, "A")).not.toThrow();
 });
+it("migrates absent or invalid keyboard settings to WASD and persists arrows", () => {
+  expect(settings().keyboardLayout).toBe("wasd");
+  for (const value of [null, "both", "WASD", 17]) {
+    data.set(key + ":settings", JSON.stringify({ keyboardLayout: value }));
+    expect(settings().keyboardLayout).toBe("wasd");
+  }
+  const s = settings();
+  s.keyboardLayout = "arrows";
+  saveSettings(s);
+  expect(settings().keyboardLayout).toBe("arrows");
+});

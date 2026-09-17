@@ -598,3 +598,34 @@ td small {
 html[data-reduced="true"] #runner {
   animation: none;
 }
+
+.keyboard-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0;
+  color: #8fa1b9;
+  font-size: 12px;
+}
+.keyboard-setting select {
+  background: #10192a;
+  border: 1px solid #2a3850;
+  border-radius: 6px;
+  color: #eaf0fc;
+  padding: 8px 12px;
+  min-width: 140px;
+  font: inherit;
+}
+.keyboard-setting select:focus-visible {
+  outline: 3px solid #8aeada;
+  outline-offset: 3px;
+}
+@media (max-height: 600px) {
+  .keyboard-setting {
+    margin: 6px 0;
+  }
+  .keyboard-setting select {
+    padding: 5px 9px;
+  }
+}
