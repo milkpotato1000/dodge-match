@@ -8,7 +8,7 @@ import { Engine, COLORS, GLYPHS, NAMES, STEP, type Chart } from "./core";
 import {
   settings,
   saveSettings,
-  ranked,
+  rankedForChart,
   recordRun,
   storageUnavailable,
   type Settings,
@@ -98,7 +98,7 @@ function setup() {
   pauseButton.hidden = true;
   clearInput();
   shell(
-    `<section class="menu"><div class="intro"><div class="eyebrow"><i></i> NEON ORBIT ARCADE <span>01 / FIRST ORBIT</span></div><h1>DODGE<span> / </span><br>MATCH<span class="period">.</span></h1><p class="tagline">두 가지 본능. 하나의 리듬.</p><p class="description">야구공을 피하며, 링이 닿는 순간 색을 맞추세요.<br>지금 밟고 있는 색은 누르지 마세요.</p><div class="instructions"><div><b>01</b><strong>MOVE</strong><span>선택한 PC 이동 키 · D-pad</span></div><div><b>02</b><strong>MATCH</strong><span>링이 닿으면 탭 / 같은 색은 패스</span></div><div><b>03</b><strong>SURVIVE</strong><span>180초 · 한 번의 충돌로 종료</span></div></div><div class="menu-foot">180 SEC <span>×</span> 151 TARGETS <span>×</span> 7 COLORS</div></div><div class="launch"><div class="dog-preview"><div class="orbit"></div><img src="/assets/dog.png" alt="흰 털과 검은 귀의 플레이어 강아지"><span>READY TO PLAY?</span></div><form id="setup-form"><label class="field">PLAYER NAME<input id="name" maxlength="16" value="${esc(prefs.name)}" required autocomplete="nickname"></label><div class="layout-label">PLAYFIELD ORDER</div><div class="segmented"><button type="button" id="normal" class="${prefs.swapped ? "" : "selected"}">DODGE / MATCH</button><button type="button" id="swapped" class="${prefs.swapped ? "selected" : ""}">MATCH / DODGE</button></div>${keyboardForm()}<details><summary>사운드 · 접근성 설정 <span>＋</span></summary>${musicForm()}<label class="toggle"><input id="reduced" type="checkbox" ${prefs.reduced ? "checked" : ""}> Reduced Effects</label><label class="toggle"><input id="vibration" type="checkbox" ${prefs.vibration ? "checked" : ""}> 진동</label><label class="range">오디오 보정 (ms)<input id="offset" type="number" min="-300" max="300" value="${prefs.offset}"></label><div class="legend">${GLYPHS.map((g, i) => `<span style="color:#${COLORS[i].toString(16)}">${g} ${NAMES[i]}</span>`).join("")}</div></details><button class="primary" type="submit">플레이 시작 <span>↗</span></button><button type="button" class="text-button" id="board">로컬 기록 보기 <span>→</span></button></form><small>최고 기록 ${ranked()[0]?.total.toLocaleString() ?? "—"} <span> / </span> 이 기기에 저장</small></div></section>`,
+    `<section class="menu"><div class="intro"><div class="eyebrow"><i></i> NEON ORBIT ARCADE <span>01 / FIRST ORBIT</span></div><h1>DODGE<span> / </span><br>MATCH<span class="period">.</span></h1><p class="tagline">두 가지 본능. 하나의 리듬.</p><p class="description">야구공을 피하며, 링이 닿는 순간 색을 맞추세요.<br>지금 밟고 있는 색은 누르지 마세요.</p><div class="instructions"><div><b>01</b><strong>MOVE</strong><span>선택한 PC 이동 키 · D-pad</span></div><div><b>02</b><strong>MATCH</strong><span>링이 닿으면 탭 / 같은 색은 패스</span></div><div><b>03</b><strong>SURVIVE</strong><span>${chart.durationMs / 1000}초 · 한 번의 충돌로 종료</span></div></div><div class="menu-foot">${chart.durationMs / 1000} SEC <span>×</span> ${chart.targets.length} TARGETS <span>×</span> 7 COLORS</div></div><div class="launch"><div class="dog-preview"><div class="orbit"></div><img src="/assets/dog.png" alt="흰 털과 검은 귀의 플레이어 강아지"><span>READY TO PLAY?</span></div><form id="setup-form"><label class="field">PLAYER NAME<input id="name" maxlength="16" value="${esc(prefs.name)}" required autocomplete="nickname"></label><div class="layout-label">PLAYFIELD ORDER</div><div class="segmented"><button type="button" id="normal" class="${prefs.swapped ? "" : "selected"}">DODGE / MATCH</button><button type="button" id="swapped" class="${prefs.swapped ? "selected" : ""}">MATCH / DODGE</button></div>${keyboardForm()}<details><summary>사운드 · 접근성 설정 <span>＋</span></summary>${musicForm()}<label class="toggle"><input id="reduced" type="checkbox" ${prefs.reduced ? "checked" : ""}> Reduced Effects</label><label class="toggle"><input id="vibration" type="checkbox" ${prefs.vibration ? "checked" : ""}> 진동</label><label class="range">오디오 보정 (ms)<input id="offset" type="number" min="-300" max="300" value="${prefs.offset}"></label><div class="legend">${GLYPHS.map((g, i) => `<span style="color:#${COLORS[i].toString(16)}">${g} ${NAMES[i]}</span>`).join("")}</div></details><button class="primary" type="submit">플레이 시작 <span>↗</span></button><button type="button" class="text-button" id="board">로컬 기록 보기 <span>→</span></button></form><small>최고 기록 ${rankedForChart(chart)[0]?.total.toLocaleString() ?? "—"} <span> / </span> 이 기기에 저장</small></div></section>`,
   );
   bindMusic();
   bindKeyboard();
@@ -183,7 +183,7 @@ function result() {
   const s = engine.score;
   const clear = engine.end === "chart_complete";
   shell(
-    `<section class="modal result"><div class="eyebrow">${clear ? "180 SECONDS. YOU MADE IT." : "ONE MORE ORBIT?"}</div><h2>${clear ? "TRACK CLEAR" : "GAME OVER"}<span>.</span></h2><p>${clear ? "두 가지 리듬을 끝까지 지켰어요." : engine.end === "dodge_collision" ? "야구공과 충돌했어요. 다음에는 조금 더 멀리." : "Match 생명이 소진됐어요. 금지색과 링을 확인하세요."}</p><div class="final-score">${s.total(engine.time).toLocaleString()}<small> / 41,575</small></div><div class="score-split"><span>DODGE <b>${(Math.floor(engine.time / 1000) * 100).toLocaleString()}</b></span><span>MATCH <b>${s.match.toLocaleString()}</b></span><span>TIME <b>${clock(engine.time)}</b></span></div><div class="grade-grid">${Object.entries(
+    `<section class="modal result"><div class="eyebrow">${clear ? "${chart.durationMs/1000} SECONDS. YOU MADE IT." : "ONE MORE ORBIT?"}</div><h2>${clear ? "TRACK CLEAR" : "GAME OVER"}<span>.</span></h2><p>${clear ? "두 가지 리듬을 끝까지 지켰어요." : engine.end === "dodge_collision" ? "야구공과 충돌했어요. 다음에는 조금 더 멀리." : "Match 생명이 소진됐어요. 금지색과 링을 확인하세요."}</p><div class="final-score">${s.total(engine.time).toLocaleString()}<small> / ${chart.maxScore.toLocaleString()}</small></div><div class="score-split"><span>DODGE <b>${(Math.floor(engine.time / 1000) * 100).toLocaleString()}</b></span><span>MATCH <b>${s.match.toLocaleString()}</b></span><span>TIME <b>${clock(engine.time)}</b></span></div><div class="grade-grid">${Object.entries(
       s.counts,
     )
       .map(([g, n]) => `<div><b>${n}</b><span>${g.toUpperCase()}</span></div>`)
@@ -199,12 +199,7 @@ function result() {
 function board() {
   state = "board";
   pauseButton.hidden = true;
-  const rows = ranked().filter(
-    (r) =>
-      r.chartId === chart.chartId &&
-      r.chartVersion === chart.chartVersion &&
-      r.rulesetVersion === chart.rulesetVersion,
-  );
+  const rows = rankedForChart(chart);
   shell(
     `<section class="modal leaderboard"><div class="eyebrow">YOUR PERSONAL BEST</div><h2>LOCAL RECORDS<span>.</span></h2><p>이 기기의 First Orbit 기록 · 높은 점수 순</p><div class="table-scroll"><table><thead><tr><th>#</th><th>PLAYER</th><th>SCORE</th><th>TIME</th><th>P / G / G / M</th></tr></thead><tbody>${rows.length ? rows.map((r, i) => `<tr><td>${String(i + 1).padStart(2, "0")}</td><td>${esc(r.name)}</td><td>${r.total.toLocaleString()}<small>D ${r.dodge} / M ${r.match}</small></td><td>${clock(r.survival)}</td><td>${Object.values(r.counts).join(" / ")}</td></tr>`).join("") : '<tr><td colspan="5">아직 기록이 없어요. 첫 번째 도전을 시작하세요.</td></tr>'}</tbody></table></div><button class="primary" id="home">시작 화면으로 →</button></section>`,
   );
@@ -526,7 +521,13 @@ class PlayScene extends Scene {
       e.score.total(e.time).toLocaleString().padStart(6, "0"),
       32,
     );
-    this.label(245, 20, "TIME / 03:00", 14, "#8291aa");
+    this.label(
+      245,
+      20,
+      `TIME / ${clock(chart.durationMs).slice(0, 5)}`,
+      14,
+      "#8291aa",
+    );
     this.label(245, 46, clock(e.time), 25);
     this.label(458, 20, "COMBO", 14, "#8291aa");
     this.label(458, 46, "×" + e.score.combo, 27, "#bfa4ff");

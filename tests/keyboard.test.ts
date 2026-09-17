@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { isMovementCode, keyboardVector } from "../src/keyboard";
-import { direction } from "../src/core";
+import { direction, PLAYER_SPEED } from "../src/core";
 describe.each(["wasd", "arrows"] as const)("%s keyboard layout", (layout) => {
   const [up, left, down, right] =
     layout === "wasd"
@@ -34,7 +34,9 @@ describe.each(["wasd", "arrows"] as const)("%s keyboard layout", (layout) => {
     ]) {
       const v = keyboardVector(new Set(combo), layout),
         unit = direction(v.x, v.y);
-      expect(Math.hypot(unit.x * 90, unit.y * 90)).toBeCloseTo(90);
+      expect(
+        Math.hypot(unit.x * PLAYER_SPEED, unit.y * PLAYER_SPEED),
+      ).toBeCloseTo(63);
     }
   });
 });

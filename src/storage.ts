@@ -1,5 +1,5 @@
 import type { KeyboardLayout } from "./keyboard";
-import type { Engine } from "./core";
+import type { Chart, Engine } from "./core";
 export type Settings = {
   name: string;
   swapped: boolean;
@@ -136,4 +136,15 @@ export function ranked(entries = records()) {
         a.createdAt.localeCompare(b.createdAt),
     )
     .slice(0, 100);
+}
+
+export function rankedForChart(chart: Chart) {
+  return ranked(
+    records().filter(
+      (r) =>
+        r.chartId === chart.chartId &&
+        r.chartVersion === chart.chartVersion &&
+        r.rulesetVersion === chart.rulesetVersion,
+    ),
+  );
 }

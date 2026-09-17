@@ -13,12 +13,12 @@ import {
   STEP,
 } from "../src/core";
 describe("adopted gameplay rules", () => {
-  it("validates 151 chart targets and independent maximum score", () => {
-    expect(validateChart(chart).targets.at(-1)?.at).toBe(179625);
+  it("validates 247 chart targets and independent maximum score", () => {
+    expect(validateChart(chart).targets.at(-1)?.at).toBe(239625);
     const s = new Score();
-    for (let i = 0; i < 151; i++) s.judge("Perfect");
-    expect(s.match).toBe(23575);
-    expect(s.total(180000)).toBe(41575);
+    for (let i = 0; i < 247; i++) s.judge("Perfect");
+    expect(s.match).toBe(42775);
+    expect(s.total(240000)).toBe(66775);
     expect(s.total(1999) - s.match).toBe(100);
   });
   it.each([
@@ -166,9 +166,9 @@ describe("adopted gameplay rules", () => {
     expect(e.zones.zones[0].color).not.toBe(old);
     expect(e.cryUntil).toBeGreaterThan(e.time);
   });
-  it("exercises a full 180-second chart with collision-free test fixture", () => {
+  it("exercises a full 240-second chart with collision-free test fixture", () => {
     const e = new Engine(chart, 999);
-    for (let i = 0; i < 10800; i++) {
+    for (let i = 0; i < 14400; i++) {
       e.balls = [];
       for (const t of e.targets)
         if (
@@ -181,7 +181,7 @@ describe("adopted gameplay rules", () => {
       e.step();
     }
     expect(e.end).toBe("chart_complete");
-    expect(e.score.counts.Perfect).toBe(151);
-    expect(e.score.total(e.time)).toBe(41575);
+    expect(e.score.counts.Perfect).toBe(247);
+    expect(e.score.total(e.time)).toBe(66775);
   });
 });

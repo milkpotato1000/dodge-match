@@ -3,6 +3,7 @@ export const COLORS = [
 ];
 export const GLYPHS = ["│", "▲", "✦", "◆", "≈", ":", "◐"];
 export const NAMES = ["빨강", "주황", "노랑", "초록", "파랑", "남색", "보라"];
+export const PLAYER_SPEED = 63;
 export const STEP = 1000 / 60,
   WIDTH = 100,
   HEIGHT = 100,
@@ -107,7 +108,7 @@ export class Score {
   }
 }
 export function validateChart(c: Chart) {
-  if (c.durationMs !== 180000 || c.bpm !== 120 || c.targets.length !== 151)
+  if (c.durationMs !== 240000 || c.bpm !== 120 || c.targets.length !== 247)
     throw Error("Invalid chart metadata");
   let last = -1;
   const s = new Score();
@@ -129,7 +130,7 @@ export function validateChart(c: Chart) {
     )
       throw Error("Too many concurrent targets");
   }
-  if (s.total(c.durationMs) !== c.maxScore || c.maxScore !== 41575)
+  if (s.total(c.durationMs) !== c.maxScore || c.maxScore !== 66775)
     throw Error("Invalid maximum score");
   return c;
 }
@@ -336,7 +337,7 @@ export class Engine {
       new Random(seed ^ 0x3456),
       new Random(seed ^ 0x4567),
     );
-    for (let i = 0; i < 3; i++) this.addBall(true);
+    for (let i = 0; i < this.chart.dodgeCurve[0][1]; i++) this.addBall(true);
     this.spawn();
   }
   difficulty() {
@@ -352,7 +353,8 @@ export class Engine {
         };
       }
     }
-    return { count: 32, speed: 65 };
+    const last = curve[curve.length - 1];
+    return { count: last[1], speed: last[2] };
   }
   private addBall(initial = false) {
     const r = this.ballRng;
@@ -483,11 +485,11 @@ export class Engine {
     const v = direction(Math.sign(this.move.x), Math.sign(this.move.y));
     this.player.x = Math.max(
       2,
-      Math.min(WIDTH - 2, this.player.x + (v.x * 90) / 60),
+      Math.min(WIDTH - 2, this.player.x + (v.x * PLAYER_SPEED) / 60),
     );
     this.player.y = Math.max(
       2,
-      Math.min(HEIGHT - 2, this.player.y + (v.y * 90) / 60),
+      Math.min(HEIGHT - 2, this.player.y + (v.y * PLAYER_SPEED) / 60),
     );
     this.zones.update(this.time);
     for (const id of penalties) this.zones.reroll(id, this.time);

@@ -45,8 +45,8 @@ it("persists settings and result details with chart version and seed", () => {
     seed: 123,
     match: 70,
     result: "dodge_collision",
-    chartVersion: "1",
-    rulesetVersion: "1",
+    chartVersion: "2",
+    rulesetVersion: "2",
   });
 });
 it("rejects malformed stored records and sorts score ties by survival", () => {
@@ -87,4 +87,22 @@ it("migrates absent or invalid keyboard settings to WASD and persists arrows", (
   s.keyboardLayout = "arrows";
   saveSettings(s);
   expect(settings().keyboardLayout).toBe("arrows");
+});
+it("keeps old records but filters versions before taking the top 100", async () => {
+  const { rankedForChart } = await import("../src/storage");
+  const e = new Engine(chart, 5);
+  e.end = "chart_complete";
+  recordRun(e, "current");
+  const current = records()[0];
+  const old = Array.from({ length: 101 }, (_, i) => ({
+    ...current,
+    runId: String(i),
+    name: "old",
+    chartVersion: "1",
+    rulesetVersion: "1",
+    total: 99999,
+  }));
+  data.set(key + ":records", JSON.stringify([...old, current]));
+  expect(records()).toHaveLength(102);
+  expect(rankedForChart(chart).map((r) => r.name)).toEqual(["current"]);
 });
