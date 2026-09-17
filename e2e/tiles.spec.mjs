@@ -41,6 +41,9 @@ test("matching tile doubles combo score, reuses loading jump, and collision uses
       count: e.zones.zones.length,
       texture: d.scene.dog.texture.key,
       frame: d.scene.dog.frame.name,
+      celebration: d.scene.texts.some(
+        (t) => t.visible && t.text === "PERFECT × MATCH!!!",
+      ),
     };
     // Waking Phaser may immediately advance multiple fixed steps; snapshot before it.
     d.game.loop.wake();
@@ -52,6 +55,7 @@ test("matching tile doubles combo score, reuses loading jump, and collision uses
     count: 16,
     texture: "dog-loading",
     frame: "happy",
+    celebration: true,
   });
   expect(matched.changed).toBe(matched.successAt);
   await page.screenshot({

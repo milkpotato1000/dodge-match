@@ -10,6 +10,12 @@ test("production build boots and reloads offline after cache installation", asyn
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("http://127.0.0.1:4173/");
   await expect(page.getByRole("button", { name: "플레이 시작" })).toBeVisible();
+  await expect(page.locator(".intro-dog")).toBeVisible();
+  expect(
+    await page
+      .locator(".intro-dog")
+      .evaluate((im) => im.complete && im.naturalWidth > 0),
+  ).toBe(true);
   await expect(
     page.getByRole("button", { name: "WASD", exact: true }),
   ).toBeVisible();

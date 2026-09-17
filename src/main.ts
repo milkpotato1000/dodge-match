@@ -111,7 +111,7 @@ function setup() {
   pauseButton.hidden = true;
   clearInput();
   shell(
-    `<section class="menu"><div class="intro"><div class="eyebrow"><i></i> NEON ORBIT ARCADE <span>01 / FIRST ORBIT</span></div><h1>DODGE<span> / </span><br>MATCH<span class="period">.</span></h1><p class="tagline">두 가지 본능. 하나의 리듬.</p><p class="description">야구공을 피하며, 링이 닿는 순간 색을 맞추세요.<br>같은 색 발판으로 이동해 누르면 점수 2배!</p><div class="instructions"><div><b>01</b><strong>MOVE</strong><span>선택한 PC 이동 키 · D-pad</span></div><div><b>02</b><strong>MATCH</strong><span>링이 닿으면 탭 / 같은 색 발판은 ×2</span></div><div><b>03</b><strong>SURVIVE</strong><span>${chart.durationMs / 1000}초 · 한 번의 충돌로 종료</span></div></div><div class="menu-foot">${chart.durationMs / 1000} SEC <span>×</span> ${chart.targets.length} TARGETS <span>×</span> 7 COLORS</div></div><div class="launch"><div class="dog-preview"><div class="orbit"></div><img src="/assets/dog.png" alt="흰 털과 검은 귀의 플레이어 강아지"><span>READY TO PLAY?</span></div><form id="setup-form"><label class="field">PLAYER NAME<input id="name" maxlength="16" value="${esc(prefs.name)}" required autocomplete="nickname"></label><div class="layout-label">PLAYFIELD ORDER</div><div class="segmented"><button type="button" id="normal" class="${prefs.swapped ? "" : "selected"}">DODGE / MATCH</button><button type="button" id="swapped" class="${prefs.swapped ? "selected" : ""}">MATCH / DODGE</button></div>${keyboardForm()}<details><summary>사운드 · 접근성 설정 <span>＋</span></summary>${musicForm()}<label class="toggle"><input id="reduced" type="checkbox" ${prefs.reduced ? "checked" : ""}> Reduced Effects</label><label class="toggle"><input id="vibration" type="checkbox" ${prefs.vibration ? "checked" : ""}> 진동</label><label class="range">오디오 보정 (ms)<input id="offset" type="number" min="-300" max="300" value="${prefs.offset}"></label><div class="legend">${GLYPHS.map((g, i) => `<span style="color:#${COLORS[i].toString(16)}">${g} ${NAMES[i]}</span>`).join("")}</div></details><button class="primary" type="submit">플레이 시작 <span>↗</span></button><button type="button" class="text-button" id="board">로컬 기록 보기 <span>→</span></button></form><small>최고 기록 ${rankedForChart(chart)[0]?.total.toLocaleString() ?? "—"} <span> / </span> 이 기기에 저장</small></div></section>`,
+    `<section class="menu"><div class="intro"><div class="eyebrow"><i></i> NEON ORBIT ARCADE <span>01 / FIRST ORBIT</span></div><div class="intro-title"><h1>DODGE<span> / </span><br>MATCH<span class="period">.</span></h1><img class="intro-dog" src="/assets/dog.png" alt="게임의 주인공 강아지"></div><p class="tagline">두 가지 본능. 하나의 리듬.</p><p class="description">야구공을 피하며, 링이 닿는 순간 색을 맞추세요.<br>같은 색 발판으로 이동해 누르면 점수 2배!</p><div class="instructions"><div><b>01</b><strong>MOVE</strong><span>선택한 PC 이동 키 · D-pad</span></div><div><b>02</b><strong>MATCH</strong><span>링이 닿으면 탭 / 같은 색 발판은 ×2</span></div><div><b>03</b><strong>SURVIVE</strong><span>${chart.durationMs / 1000}초 · 한 번의 충돌로 종료</span></div></div><div class="menu-foot">${chart.durationMs / 1000} SEC <span>×</span> ${chart.targets.length} TARGETS <span>×</span> 7 COLORS</div></div><div class="launch"><form id="setup-form"><label class="field">PLAYER NAME<input id="name" maxlength="16" value="${esc(prefs.name)}" required autocomplete="nickname"></label><div class="layout-label">PLAYFIELD ORDER</div><div class="segmented"><button type="button" id="normal" class="${prefs.swapped ? "" : "selected"}">DODGE / MATCH</button><button type="button" id="swapped" class="${prefs.swapped ? "selected" : ""}">MATCH / DODGE</button></div>${keyboardForm()}<details><summary>사운드 · 접근성 설정 <span>＋</span></summary>${musicForm()}<label class="toggle"><input id="reduced" type="checkbox" ${prefs.reduced ? "checked" : ""}> Reduced Effects</label><label class="toggle"><input id="vibration" type="checkbox" ${prefs.vibration ? "checked" : ""}> 진동</label><label class="range">오디오 보정 (ms)<input id="offset" type="number" min="-300" max="300" value="${prefs.offset}"></label><div class="legend">${GLYPHS.map((g, i) => `<span style="color:#${COLORS[i].toString(16)}">${g} ${NAMES[i]}</span>`).join("")}</div></details><button class="primary" type="submit">플레이 시작 <span>↗</span></button><button type="button" class="text-button" id="board">로컬 기록 보기 <span>→</span></button></form><small>최고 기록 ${rankedForChart(chart)[0]?.total.toLocaleString() ?? "—"} <span> / </span> 이 기기에 저장</small></div></section>`,
   );
   bindMusic();
   bindKeyboard();
@@ -547,23 +547,44 @@ class PlayScene extends Scene {
       }
     }
     for (const f of e.feedback) {
+      const matched = f.reason === "COLOR MATCH ×2";
+      const age = Math.max(0, e.time - f.time),
+        progress = Math.min(1, age / 700);
+      const alpha = 1 - progress;
+      const pop =
+        matched && !prefs.reduced
+          ? 1 + 0.18 * Math.sin(Math.min(1, age / 220) * Math.PI)
+          : 1;
+      const fx = matched
+        ? Math.max(mx + 220, Math.min(mx + size - 220, mx + f.x * u))
+        : mx + f.x * u;
+      const fy =
+        Math.max(145, Math.min(800, 120 + f.y * u - 16)) -
+        (matched && !prefs.reduced ? progress * 24 : 0);
+      if (matched && !prefs.reduced) {
+        g.lineStyle(3 * alpha, 0x8ef5de, alpha * 0.55).strokeCircle(
+          mx + f.x * u,
+          120 + f.y * u,
+          70 + progress * 65,
+        );
+      }
       this.label(
-        mx + f.x * u,
-        120 + f.y * u - 16,
-        f.grade.toUpperCase(),
-        26,
+        fx,
+        fy,
+        f.grade.toUpperCase() + (matched ? " × MATCH!!!" : ""),
+        (matched ? 28 : 26) * pop,
         f.grade === "Miss" ? "#ffb1be" : "#8ef5de",
         "center",
-        1 - (e.time - f.time) / 700,
+        alpha,
       );
       this.label(
-        mx + f.x * u,
-        150 + f.y * u,
-        f.reason,
+        fx,
+        fy + 44,
+        matched ? "SCORE ×2" : f.reason,
         14,
-        "#b7c3d8",
+        matched ? "#f8da72" : "#b7c3d8",
         "center",
-        1 - (e.time - f.time) / 700,
+        alpha,
       );
     }
     g.lineStyle(1, 0x263146).lineBetween(0, 96, 1600, 96);
