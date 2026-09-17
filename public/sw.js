@@ -1,4 +1,4 @@
-const CACHE = "dodge-match-celebration-v4";
+const CACHE = "dodge-match-player-size-v4";
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {

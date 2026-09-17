@@ -450,7 +450,7 @@ class PlayScene extends Scene {
       )
       .setOrigin(0.5, 1);
     const spriteScale =
-      (4 * u) / Math.max(this.dog.frame.width, this.dog.frame.height);
+      (4.4 * u) / Math.max(this.dog.frame.width, this.dog.frame.height);
     this.dog
       .setScale(spriteScale)
       .setPosition(px, py - motion.lift * u)
