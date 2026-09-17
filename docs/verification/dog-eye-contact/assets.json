@@ -1,0 +1,23 @@
+{
+  "dog.png": {
+    "size": [
+      1254,
+      1254
+    ],
+    "sha256": "1f1291a62c114bae63be31bf78d1becb8fd33ccba7230c9c6ae076cb34c94df9"
+  },
+  "dog-cry.png": {
+    "size": [
+      1254,
+      1254
+    ],
+    "sha256": "8e5f99b8d25b58c814478df5eac015718df04013778eca9de672fb4e9d92a489"
+  },
+  "loading.png": {
+    "size": [
+      2171,
+      724
+    ],
+    "sha256": "d285c05f427a1785cab2708554d9e61966b2119e5d1acc288899f877bc861756"
+  }
+}

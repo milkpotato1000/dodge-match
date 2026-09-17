@@ -10,12 +10,14 @@
 
 | 현재 파일 | 역할 |
 | --- | --- |
-| `player-dog-idle-v3.png` | 기본 포즈 1254×1254 RGBA |
-| `player-dog-cry-v2.png` | 기존 울음 자세 편집본 1254×1254 RGBA, 야구공 충돌에만 사용 |
-| `player-dog-loading-run-v2.png` | 기존 6개 동작 편집본 2171×724 RGBA, 네 번째 성공 점프 |
+| `player-dog-idle-v4.png` | 기본 포즈 1254×1254 RGBA |
+| `player-dog-cry-v3.png` | 기존 울음 자세 편집본 1254×1254 RGBA, 야구공 충돌에만 사용 |
+| `player-dog-loading-run-v3.png` | 기존 6개 동작 편집본 2171×724 RGBA, 네 번째 성공 점프 |
 
 런타임은 각각 `public/assets/dog.png`, `dog-cry.png`, `loading.png`에 동일 바이트로 복사한다.
 ImageGen 내장 편집 사용. [편집 지시 기록](../../verification/dog-markings-v3/prompts.md).
+
+최종 미세 보정: 왼쪽 관자놀이의 검정 털이 왼쪽 눈 바깥 경계 일부에 직접 닿는다. 눈 아래와 안쪽은 흰색으로 남긴다. [편집·검증](../../verification/dog-eye-contact/results.md). 이전 v3/v2 마스터도 보존한다.
 
 ## 이전 자산
 
