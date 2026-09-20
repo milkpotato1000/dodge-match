@@ -3,7 +3,7 @@
   "short_name": "Dodge Match",
   "start_url": "./",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "landscape",
   "background_color": "#080d1b",
   "theme_color": "#080d1b",
