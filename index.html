@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#080d1b" />
+    <meta
+      name="description"
+      content="피하고, 맞추고, 살아남으세요. 240초의 듀얼 리듬 아케이드."
+    />
+    <link rel="manifest" href="/dodge-match/manifest.webmanifest" />
+    <link rel="icon" href="/dodge-match/icon.svg" />
+    <title>Dodge Match · Neon Orbit</title>
+    <script type="module" crossorigin src="/dodge-match/assets/index-_3mG-P-j.js"></script>
+    <link rel="stylesheet" crossorigin href="/dodge-match/assets/index-V2Le3PrY.css">
+  </head>
+  <body>
+    <main id="app">
+      <div id="game" aria-label="Dodge Match 게임 화면"></div>
+      <div id="overlay"></div>
+      <button id="pause" aria-label="일시정지" hidden>Ⅱ</button>
+      <div id="rotate">
+        <span>↻</span>
+        <h2>가로로 돌려주세요</h2>
+        <p>두 개의 플레이필드, 하나의 도전.</p>
+      </div>
+      <div id="boot">
+        <div class="eyebrow">NEON ORBIT ARCADE</div>
+        <h1>DODGE<span> / </span>MATCH</h1>
+        <div id="loading-detail" hidden>
+          <div class="load-track">
+            <div id="load-fill"></div>
+            <div id="runner"></div>
+          </div>
+          <p id="load-label">0%</p>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
