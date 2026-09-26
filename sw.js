@@ -1,4 +1,4 @@
-const CACHE = "dodge-match-deploy-path-v5";
+const CACHE = "dodge-match-poc-v6";
 const appUrl = (path = "") => new URL(path, self.registration.scope).toString();
 self.addEventListener("install", (event) => {
   event.waitUntil(
